@@ -1,0 +1,872 @@
+* {
+  box-sizing: border-box;
+}
+
+.auth-page {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 46% 54%;
+  background: #f8fafc;
+  font-family:
+    Inter,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+}
+
+
+/* =========================================
+   LEFT BRAND PANEL
+========================================= */
+
+.brand-panel {
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
+
+  background:
+    radial-gradient(
+      circle at 15% 20%,
+      rgba(37, 99, 235, 0.25),
+      transparent 32%
+    ),
+    radial-gradient(
+      circle at 85% 80%,
+      rgba(14, 165, 233, 0.16),
+      transparent 30%
+    ),
+    #07111f;
+
+  color: white;
+}
+
+.brand-panel::before {
+  content: "";
+
+  position: absolute;
+  inset: 0;
+
+  background-image:
+    linear-gradient(
+      rgba(255, 255, 255, 0.025) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.025) 1px,
+      transparent 1px
+    );
+
+  background-size: 48px 48px;
+
+  mask-image: linear-gradient(
+    to bottom,
+    black,
+    transparent 85%
+  );
+}
+
+.brand-glow {
+  position: absolute;
+
+  width: 280px;
+  height: 280px;
+
+  border-radius: 50%;
+
+  filter: blur(80px);
+
+  opacity: 0.22;
+
+  pointer-events: none;
+}
+
+.glow-one {
+  background: #2563eb;
+
+  top: -100px;
+  right: -80px;
+}
+
+.glow-two {
+  background: #0ea5e9;
+
+  bottom: -120px;
+  left: -100px;
+}
+
+.brand-content {
+  position: relative;
+  z-index: 2;
+
+  min-height: 100vh;
+
+  padding: 48px 58px 42px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+
+/* =========================================
+   LOGO
+========================================= */
+
+.brand-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brand-logo-icon {
+  width: 44px;
+  height: 44px;
+
+  border-radius: 13px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: linear-gradient(
+    135deg,
+    #2563eb,
+    #0ea5e9
+  );
+
+  box-shadow:
+    0 10px 30px rgba(37, 99, 235, 0.3);
+
+  font-size: 21px;
+}
+
+.brand-name {
+  font-size: 21px;
+  font-weight: 750;
+  letter-spacing: -0.5px;
+  color: #fff;
+}
+
+.brand-name span {
+  color: #60a5fa;
+}
+
+
+/* =========================================
+   HERO
+========================================= */
+
+.hero-content {
+  max-width: 570px;
+  margin-top: 30px;
+}
+
+.hero-eyebrow {
+  display: flex;
+  align-items: center;
+
+  gap: 9px;
+
+  color: #60a5fa;
+
+  font-size: 12px;
+  font-weight: 700;
+
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
+}
+
+.eyebrow-dot {
+  width: 7px;
+  height: 7px;
+
+  border-radius: 50%;
+
+  background: #60a5fa;
+
+  box-shadow: 0 0 14px #60a5fa;
+}
+
+.hero-title {
+  margin: 18px 0 20px !important;
+
+  color: #fff !important;
+
+  font-size: clamp(40px, 4.2vw, 62px) !important;
+
+  line-height: 1.04 !important;
+
+  letter-spacing: -2.5px;
+
+  font-weight: 750 !important;
+}
+
+.hero-title span {
+  background: linear-gradient(
+    90deg,
+    #60a5fa,
+    #38bdf8
+  );
+
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.hero-description {
+  display: block;
+
+  max-width: 500px;
+
+  color: #a9b8ca !important;
+
+  font-size: 16px;
+
+  line-height: 1.75;
+}
+
+
+/* =========================================
+   MATCH GRAPHIC
+========================================= */
+
+.match-graphic {
+  position: relative;
+
+  width: 360px;
+  height: 72px;
+
+  margin: 32px 0;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: space-between;
+}
+
+.match-line {
+  position: absolute;
+
+  left: 38px;
+  right: 38px;
+
+  height: 1px;
+
+  top: 50%;
+
+  background: linear-gradient(
+    90deg,
+    rgba(96, 165, 250, 0),
+    rgba(96, 165, 250, 0.7),
+    rgba(56, 189, 248, 0)
+  );
+}
+
+.match-node {
+  position: relative;
+  z-index: 2;
+
+  width: 48px;
+  height: 48px;
+
+  border-radius: 15px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: rgba(96, 165, 250, 0.08);
+
+  border: 1px solid rgba(96, 165, 250, 0.35);
+
+  color: #93c5fd;
+
+  font-size: 19px;
+
+  box-shadow:
+    0 0 0 8px rgba(96, 165, 250, 0.025);
+}
+
+.match-center {
+  position: relative;
+  z-index: 3;
+
+  width: 34px;
+  height: 34px;
+
+  border-radius: 50%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: #2563eb;
+
+  color: white;
+
+  font-size: 13px;
+
+  box-shadow:
+    0 0 0 7px rgba(37, 99, 235, 0.12),
+    0 8px 20px rgba(37, 99, 235, 0.35);
+}
+
+
+/* =========================================
+   FEATURES
+========================================= */
+
+.hero-features {
+  display: flex;
+  flex-direction: column;
+
+  gap: 15px;
+}
+
+.hero-feature {
+  display: flex;
+  align-items: center;
+
+  gap: 12px;
+
+  color: #d8e2ef;
+
+  font-size: 14px;
+}
+
+.feature-icon {
+  color: #60a5fa;
+
+  font-size: 17px;
+}
+
+
+/* =========================================
+   TRUST
+========================================= */
+
+.brand-bottom {
+  display: grid;
+
+  grid-template-columns:
+    repeat(3, 1fr);
+
+  gap: 18px;
+
+  padding-top: 28px;
+
+  border-top:
+    1px solid rgba(255, 255, 255, 0.09);
+}
+
+.trust-item {
+  display: flex;
+  align-items: center;
+
+  gap: 10px;
+
+  color: #60a5fa;
+}
+
+.trust-item > svg {
+  font-size: 20px;
+}
+
+.trust-item div {
+  display: flex;
+  flex-direction: column;
+
+  gap: 2px;
+}
+
+.trust-item strong {
+  color: #e7edf6;
+
+  font-size: 12px;
+}
+
+.trust-item span {
+  color: #718096;
+
+  font-size: 11px;
+}
+
+
+/* =========================================
+   RIGHT AUTH PANEL
+========================================= */
+
+.auth-panel {
+  min-height: 100vh;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 50px 30px;
+
+  background:
+    radial-gradient(
+      circle at 80% 10%,
+      rgba(37, 99, 235, 0.05),
+      transparent 30%
+    ),
+    #f8fafc;
+}
+
+.auth-wrapper {
+  width: 100%;
+  max-width: 470px;
+}
+
+
+/* =========================================
+   MOBILE BRAND
+========================================= */
+
+.mobile-brand {
+  display: none;
+}
+
+
+/* =========================================
+   DESKTOP SWITCH
+========================================= */
+
+.desktop-auth-switch {
+  display: flex;
+
+  width: fit-content;
+
+  margin: 0 auto 24px;
+
+  padding: 4px;
+
+  border-radius: 13px;
+
+  background: #e9eef5;
+}
+
+.desktop-auth-switch button {
+  min-width: 130px;
+
+  padding: 10px 18px;
+
+  border: none;
+
+  border-radius: 9px;
+
+  background: transparent;
+
+  color: #64748b;
+
+  font-size: 14px;
+
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition: all 0.2s ease;
+}
+
+.desktop-auth-switch button.active {
+  background: #fff;
+
+  color: #0f172a;
+
+  box-shadow:
+    0 3px 10px rgba(15, 23, 42, 0.08);
+}
+
+.desktop-auth-switch button:hover {
+  color: #2563eb;
+}
+
+
+/* =========================================
+   AUTH CARD
+========================================= */
+
+.auth-card {
+  position: relative;
+
+  overflow: hidden;
+
+  background: rgba(255, 255, 255, 0.96);
+
+  border: 1px solid #e5eaf1;
+
+  border-radius: 22px;
+
+  padding: 38px 40px 32px;
+
+  box-shadow:
+    0 24px 70px rgba(15, 23, 42, 0.08),
+    0 3px 12px rgba(15, 23, 42, 0.03);
+}
+
+.card-top-line {
+  position: absolute;
+
+  top: 0;
+
+  left: 40px;
+  right: 40px;
+
+  height: 3px;
+
+  background: linear-gradient(
+    90deg,
+    #2563eb,
+    #38bdf8
+  );
+
+  border-radius:
+    0 0 5px 5px;
+}
+
+.auth-card-header {
+  margin-bottom: 28px;
+}
+
+.card-eyebrow {
+  margin-bottom: 9px;
+
+  color: #2563eb;
+
+  font-size: 11px;
+
+  font-weight: 750;
+
+  letter-spacing: 1.3px;
+}
+
+.card-title {
+  margin: 0 0 8px !important;
+
+  color: #0f172a !important;
+
+  font-size: 29px !important;
+
+  font-weight: 750 !important;
+
+  letter-spacing: -0.8px;
+}
+
+.card-subtitle {
+  color: #64748b !important;
+
+  font-size: 14px;
+
+  line-height: 1.65;
+}
+
+
+/* =========================================
+   FORM ANIMATION
+========================================= */
+
+.auth-form-wrapper {
+  animation: authFade 0.28s ease;
+}
+
+@keyframes authFade {
+  from {
+    opacity: 0;
+
+    transform:
+      translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+
+    transform:
+      translateY(0);
+  }
+}
+
+
+/* =========================================
+   MOBILE AUTH SWITCH
+========================================= */
+
+.mobile-auth-switch {
+  display: none;
+}
+
+
+/* =========================================
+   FOOTER
+========================================= */
+
+.auth-footer {
+  display: flex;
+
+  justify-content: center;
+  align-items: center;
+
+  gap: 8px;
+
+  margin-top: 22px;
+
+  color: #94a3b8;
+
+  font-size: 11px;
+}
+
+.auth-footer span {
+  color: #cbd5e1;
+}
+
+
+/* =========================================
+   TABLET
+========================================= */
+
+@media (max-width: 1100px) {
+
+  .brand-content {
+    padding: 40px;
+  }
+
+  .hero-title {
+    font-size: 45px !important;
+  }
+
+  .match-graphic {
+    width: 300px;
+  }
+}
+
+
+/* =========================================
+   MOBILE / SMALL SCREEN
+========================================= */
+
+@media (max-width: 991px) {
+
+  /*
+   * Completely remove desktop branding.
+   */
+  .brand-panel {
+    display: none;
+  }
+
+  .auth-page {
+    min-height: 100dvh;
+
+    display: block;
+
+    background: #f8fafc;
+  }
+
+  .auth-panel {
+    min-height: 100dvh;
+
+    padding:
+      24px 16px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+  }
+
+  .auth-wrapper {
+    width: 100%;
+
+    max-width: 480px;
+  }
+
+
+  /*
+   * Mobile logo
+   */
+
+  .mobile-brand {
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    gap: 10px;
+
+    margin-bottom: 24px;
+  }
+
+  .mobile-brand-icon {
+    width: 40px;
+    height: 40px;
+
+    border-radius: 11px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    background: linear-gradient(
+      135deg,
+      #2563eb,
+      #0ea5e9
+    );
+
+    color: white;
+
+    font-size: 19px;
+  }
+
+
+  /*
+   * Hide desktop switch
+   */
+
+  .desktop-auth-switch {
+    display: none;
+  }
+
+
+  /*
+   * Card becomes simple
+   */
+
+  .auth-card {
+    width: 100%;
+
+    padding:
+      30px 22px 24px;
+
+    border-radius: 18px;
+
+    box-shadow:
+      0 12px 40px
+      rgba(15, 23, 42, 0.07);
+  }
+
+  .card-top-line {
+    left: 25px;
+    right: 25px;
+  }
+
+  .card-title {
+    font-size: 25px !important;
+  }
+
+
+  /*
+   * Mobile login/register link
+   */
+
+  .mobile-auth-switch {
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    gap: 5px;
+
+    margin-top: 22px;
+
+    padding-top: 18px;
+
+    border-top:
+      1px solid #edf0f4;
+
+    color: #64748b;
+
+    font-size: 13px;
+
+    text-align: center;
+  }
+
+  .mobile-auth-switch button {
+    padding: 0;
+
+    border: none;
+
+    background: transparent;
+
+    color: #2563eb;
+
+    font-size: 13px;
+
+    font-weight: 650;
+
+    cursor: pointer;
+  }
+
+  .mobile-auth-switch button:hover {
+    text-decoration: underline;
+  }
+
+
+  /*
+   * Footer
+   */
+
+  .auth-footer {
+    margin-top: 16px;
+
+    font-size: 10px;
+  }
+}
+
+
+/* =========================================
+   VERY SMALL PHONES
+========================================= */
+
+@media (max-width: 420px) {
+
+  .auth-panel {
+    padding:
+      18px 12px;
+  }
+
+  .mobile-brand {
+    margin-bottom: 18px;
+  }
+
+  .auth-card {
+    padding:
+      26px 18px 20px;
+  }
+
+  .auth-card-header {
+    margin-bottom: 22px;
+  }
+
+  .card-title {
+    font-size: 23px !important;
+  }
+
+  .card-subtitle {
+    font-size: 13px;
+  }
+
+  .mobile-auth-switch {
+    font-size: 12px;
+  }
+
+  .mobile-auth-switch button {
+    font-size: 12px;
+  }
+
+  .auth-footer {
+    display: none;
+  }
+}
+
+
+/* =========================================
+   REDUCED MOTION
+========================================= */
+
+@media (prefers-reduced-motion: reduce) {
+
+  * {
+    animation-duration: 0.001ms !important;
+  }
+}

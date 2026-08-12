@@ -1,0 +1,321 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Typography } from "antd";
+import {
+  ArrowRightOutlined,
+  CheckCircleFilled,
+  GlobalOutlined,
+  SafetyCertificateOutlined,
+  TeamOutlined,
+} from "@ant-design/icons";
+
+import LoginForm from "../pages/LoginPage.jsx";
+import RegisterForm from "../pages/RegisterPage.jsx";
+import "./AuthPage.css";
+
+const { Title, Text } = Typography;
+
+const COPY = {
+  login: {
+    eyebrow: "WELCOME BACK",
+    heading: (
+      <>
+        Build something
+        <br />
+        <span>great together.</span>
+      </>
+    ),
+    body: "Find people who complement your skills, share your ambition, and are ready to build the next big thing.",
+    bullets: [
+      "Discover partners with complementary skills",
+      "Connect with people near your location",
+      "Build meaningful professional relationships",
+    ],
+    cardEyebrow: "WELCOME BACK",
+    cardTitle: "Sign in to PartnerMatch",
+    cardSubtitle:
+      "Continue where you left off and discover your next opportunity.",
+  },
+
+  register: {
+    eyebrow: "START YOUR JOURNEY",
+    heading: (
+      <>
+        Don't build
+        <br />
+        <span>alone.</span>
+      </>
+    ),
+    body: "PartnerMatch helps founders, entrepreneurs and professionals find the right people to turn ideas into reality.",
+    bullets: [
+      "Find complementary skills for your venture",
+      "Discover collaboration opportunities",
+      "Grow your professional network",
+    ],
+    cardEyebrow: "GET STARTED",
+    cardTitle: "Create your account",
+    cardSubtitle:
+      "Tell us about yourself and we'll help you find better matches.",
+  },
+};
+
+function MatchGraphic() {
+  return (
+    <div className="match-graphic">
+      <div className="match-line" />
+
+      <div className="match-node">
+        <TeamOutlined />
+      </div>
+
+      <div className="match-center">
+        <ArrowRightOutlined />
+      </div>
+
+      <div className="match-node">
+        <GlobalOutlined />
+      </div>
+    </div>
+  );
+}
+
+export default function AuthPage({ initialMode = "login" }) {
+  const [mode, setMode] = useState(initialMode);
+  const navigate = useNavigate();
+
+  const copy = COPY[mode];
+
+  const handleModeChange = (next) => {
+    setMode(next);
+    navigate(`/${next}`, { replace: true });
+  };
+
+  return (
+    <div className="auth-page">
+
+      {/* =================================
+          DESKTOP LEFT BRANDING
+      ================================= */}
+      <section className="brand-panel">
+
+        <div className="brand-glow glow-one" />
+        <div className="brand-glow glow-two" />
+
+        <div className="brand-content">
+
+          {/* Logo */}
+          <div className="brand-logo">
+            <div className="brand-logo-icon">
+              <TeamOutlined />
+            </div>
+
+            <div className="brand-name">
+              Partner<span>Match</span>
+            </div>
+          </div>
+
+          {/* Hero */}
+          <div className="hero-content">
+
+            <div className="hero-eyebrow">
+              <span className="eyebrow-dot" />
+              {copy.eyebrow}
+            </div>
+
+            <Title className="hero-title">
+              {copy.heading}
+            </Title>
+
+            <Text className="hero-description">
+              {copy.body}
+            </Text>
+
+            <MatchGraphic />
+
+            <div className="hero-features">
+              {copy.bullets.map((item) => (
+                <div className="hero-feature" key={item}>
+                  <CheckCircleFilled className="feature-icon" />
+                  <span>{item}</span>
+                </div>
+              ))}
+            </div>
+
+          </div>
+
+          {/* Trust */}
+          <div className="brand-bottom">
+
+            <div className="trust-item">
+              <SafetyCertificateOutlined />
+
+              <div>
+                <strong>Trusted</strong>
+                <span>Connections</span>
+              </div>
+            </div>
+
+            <div className="trust-item">
+              <GlobalOutlined />
+
+              <div>
+                <strong>Global</strong>
+                <span>Opportunities</span>
+              </div>
+            </div>
+
+            <div className="trust-item">
+              <TeamOutlined />
+
+              <div>
+                <strong>Growing</strong>
+                <span>Community</span>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      </section>
+
+
+      {/* =================================
+          RIGHT AUTH SECTION
+      ================================= */}
+      <section className="auth-panel">
+
+        {/* Mobile Logo */}
+        <div className="mobile-brand">
+
+          <div className="mobile-brand-icon">
+            <TeamOutlined />
+          </div>
+
+          <div className="brand-name">
+            Partner<span>Match</span>
+          </div>
+
+        </div>
+
+
+        <div className="auth-wrapper">
+
+          {/* =================================
+              DESKTOP SWITCH
+          ================================= */}
+          <div className="desktop-auth-switch">
+
+            <button
+              className={mode === "login" ? "active" : ""}
+              onClick={() => handleModeChange("login")}
+            >
+              Sign in
+            </button>
+
+            <button
+              className={mode === "register" ? "active" : ""}
+              onClick={() => handleModeChange("register")}
+            >
+              Create account
+            </button>
+
+          </div>
+
+
+          {/* =================================
+              AUTH CARD
+          ================================= */}
+          <div className="auth-card">
+
+            <div className="card-top-line" />
+
+            <div className="auth-card-header">
+
+              <div className="card-eyebrow">
+                {copy.cardEyebrow}
+              </div>
+
+              <Title level={2} className="card-title">
+                {copy.cardTitle}
+              </Title>
+
+              <Text className="card-subtitle">
+                {copy.cardSubtitle}
+              </Text>
+
+            </div>
+
+
+            {/* Form */}
+            <div
+              key={mode}
+              className="auth-form-wrapper"
+            >
+
+              {mode === "login" ? (
+                <LoginForm
+                  onSwitchToRegister={() =>
+                    handleModeChange("register")
+                  }
+                />
+              ) : (
+                <RegisterForm
+                  onSwitchToLogin={() =>
+                    handleModeChange("login")
+                  }
+                />
+              )}
+
+            </div>
+
+
+            {/* =================================
+                MOBILE SWITCH
+            ================================= */}
+            <div className="mobile-auth-switch">
+
+              {mode === "login" ? (
+                <>
+                  <span>Don't have an account?</span>
+
+                  <button
+                    onClick={() =>
+                      handleModeChange("register")
+                    }
+                  >
+                    Create account
+                  </button>
+                </>
+              ) : (
+                <>
+                  <span>Already have an account?</span>
+
+                  <button
+                    onClick={() =>
+                      handleModeChange("login")
+                    }
+                  >
+                    Sign in
+                  </button>
+                </>
+              )}
+
+            </div>
+
+          </div>
+
+
+          {/* Footer */}
+          <div className="auth-footer">
+            © 2026 PartnerMatch
+            <span>•</span>
+            Connect. Collaborate. Grow.
+          </div>
+
+        </div>
+
+      </section>
+
+    </div>
+  );
+}
