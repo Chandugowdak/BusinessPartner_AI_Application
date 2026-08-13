@@ -171,7 +171,7 @@
 
   color: #60a5fa;
 
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 700;
 
   letter-spacing: 1.8px;
@@ -221,7 +221,7 @@
 
   color: #a9b8ca !important;
 
-  font-size: 16px;
+  font-size: 1rem;
 
   line-height: 1.75;
 }
@@ -461,7 +461,7 @@
 
   color: #64748b;
 
-  font-size: 14px;
+  font-size: 0.875rem;
 
   font-weight: 600;
 
@@ -481,6 +481,13 @@
 
 .desktop-auth-switch button:hover {
   color: #2563eb;
+}
+
+.desktop-auth-switch button:focus-visible,
+.mobile-auth-switch button:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+  border-radius: 6px;
 }
 
 
@@ -547,7 +554,7 @@
 
   color: #0f172a !important;
 
-  font-size: 29px !important;
+  font-size: 1.8125rem !important;
 
   font-weight: 750 !important;
 
@@ -555,20 +562,31 @@
 }
 
 .card-subtitle {
-  color: #64748b !important;
+  color: #56637a !important;
 
-  font-size: 14px;
+  font-size: 0.875rem;
 
   line-height: 1.65;
 }
 
 
 /* =========================================
-   FORM ANIMATION
+   FORM SWAP BEHAVIOR
+   Desktop: soft fade transition between login/register
+   inside the same tabbed card (matches the reference UI).
+   Mobile: instant hard swap — no animation — so navigating
+   between /login and /register reads as a real page change,
+   not a scroll/fade within one continuous page.
 ========================================= */
 
 .auth-form-wrapper {
-  animation: authFade 0.28s ease;
+  opacity: 1;
+}
+
+@media (min-width: 992px) {
+  .auth-form-wrapper {
+    animation: authFade 0.28s ease;
+  }
 }
 
 @keyframes authFade {
@@ -611,9 +629,9 @@
 
   margin-top: 22px;
 
-  color: #94a3b8;
+  color: #6b7280;
 
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 
 .auth-footer span {
@@ -637,6 +655,14 @@
 
   .match-graphic {
     width: 300px;
+  }
+
+  .brand-bottom {
+    gap: 12px;
+  }
+
+  .trust-item span {
+    display: none;
   }
 }
 
@@ -782,7 +808,12 @@
   }
 
   .mobile-auth-switch button {
-    padding: 0;
+    padding: 10px;
+    margin: -10px;
+    min-height: 44px;
+
+    display: inline-flex;
+    align-items: center;
 
     border: none;
 

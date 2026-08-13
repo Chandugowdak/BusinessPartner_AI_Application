@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Typography } from "antd";
 import {
@@ -85,6 +85,20 @@ export default function AuthPage({ initialMode = "login" }) {
 
   const copy = COPY[mode];
 
+  // Keep internal mode in sync if the route changes the initialMode
+  // (e.g. browser back/forward between /login and /register).
+  useEffect(() => {
+    setMode(initialMode);
+  }, [initialMode]);
+
+  // Every time the mode changes (i.e. every "page" switch), snap to the
+  // top instead of letting the browser keep whatever scroll position the
+  // previous page was at. This is what makes mobile feel like a real page
+  // navigation instead of scrolling within one long page.
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+  }, [mode]);
+
   const handleModeChange = (next) => {
     setMode(next);
     navigate(`/${next}`, { replace: true });
@@ -95,6 +109,7 @@ export default function AuthPage({ initialMode = "login" }) {
 
       {/* =================================
           DESKTOP LEFT BRANDING
+          (hidden entirely on mobile/small via CSS)
       ================================= */}
       <section className="brand-panel">
 
@@ -181,6 +196,7 @@ export default function AuthPage({ initialMode = "login" }) {
 
       {/* =================================
           RIGHT AUTH SECTION
+          (this is the ONLY thing shown on mobile/small)
       ================================= */}
       <section className="auth-panel">
 
@@ -201,7 +217,7 @@ export default function AuthPage({ initialMode = "login" }) {
         <div className="auth-wrapper">
 
           {/* =================================
-              DESKTOP SWITCH
+              DESKTOP SWITCH (hidden on mobile)
           ================================= */}
           <div className="desktop-auth-switch">
 
@@ -246,7 +262,8 @@ export default function AuthPage({ initialMode = "login" }) {
             </div>
 
 
-            {/* Form */}
+            {/* Form: key={mode} forces a fresh mount so old form state
+                never bleeds into the new one, on desktop or mobile. */}
             <div
               key={mode}
               className="auth-form-wrapper"
@@ -270,7 +287,10 @@ export default function AuthPage({ initialMode = "login" }) {
 
 
             {/* =================================
-                MOBILE SWITCH
+                MOBILE SWITCH — this is the link mobile
+                users tap; it routes to a fresh page via
+                handleModeChange (navigate + scroll reset)
+                instead of feeling like an in-page swap.
             ================================= */}
             <div className="mobile-auth-switch">
 
