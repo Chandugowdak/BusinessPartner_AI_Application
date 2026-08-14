@@ -1,5 +1,7 @@
 import { Button, Checkbox, Form, Input, message } from "antd";
 import { ArrowRightOutlined, LockOutlined, MailOutlined } from "@ant-design/icons";
+import { Link } from "react-router-dom";
+import "./LoginForm.css";
 
 /**
  * LoginForm
@@ -23,13 +25,14 @@ export default function LoginForm({ onSwitchToRegister }) {
       form={form}
       layout="vertical"
       name="login"
+      className="login-form"
       initialValues={{ remember: true }}
       onFinish={onFinish}
       requiredMark={false}
       autoComplete="off"
     >
       <Form.Item
-        label={<span className="fw-semibold">Email address</span>}
+        label={<span className="login-form-label">Email address</span>}
         name="email"
         rules={[
           { required: true, message: "Please enter your email address." },
@@ -38,40 +41,36 @@ export default function LoginForm({ onSwitchToRegister }) {
       >
         <Input
           size="large"
-          prefix={<MailOutlined className="text-secondary" />}
+          prefix={<MailOutlined className="login-form-icon" />}
           placeholder="you@example.com"
-          style={{ height: 48, borderRadius: 10 }}
+          className="login-form-input"
         />
       </Form.Item>
 
       <Form.Item
-        label={<span className="fw-semibold">Password</span>}
+        label={<span className="login-form-label">Password</span>}
         name="password"
         rules={[{ required: true, message: "Please enter your password." }]}
       >
         <Input.Password
           size="large"
-          prefix={<LockOutlined className="text-secondary" />}
+          prefix={<LockOutlined className="login-form-icon" />}
           placeholder="Enter your password"
-          style={{ height: 48, borderRadius: 10 }}
+          className="login-form-input"
         />
       </Form.Item>
 
-      <div className="d-flex justify-content-between align-items-center mb-4">
+      <div className="login-form-meta-row">
         <Form.Item name="remember" valuePropName="checked" noStyle>
-          <Checkbox>Remember me</Checkbox>
+          <Checkbox className="login-form-remember">Remember me</Checkbox>
         </Form.Item>
 
-        <a
-          href="#"
-          onClick={(e) => e.preventDefault()}
-          style={{ color: "#2563eb", fontWeight: 500, textDecoration: "none", fontSize: 14 }}
-        >
+        <Link to="/forgot-password" className="login-form-forgot">
           Forgot password?
-        </a>
+        </Link>
       </div>
 
-      <Form.Item className="mb-3">
+      <Form.Item className="login-form-submit-item">
         <Button
           type="primary"
           htmlType="submit"
@@ -79,27 +78,21 @@ export default function LoginForm({ onSwitchToRegister }) {
           block
           icon={<ArrowRightOutlined />}
           iconPosition="end"
-          style={{ height: 50, borderRadius: 10, fontWeight: 600, fontSize: 16 }}
+          className="login-form-submit"
         >
           Sign in
         </Button>
       </Form.Item>
 
-      <div className="text-center">
-        <span className="text-secondary" style={{ fontSize: 14 }}>
-          New to PartnerMatch?{" "}
-        </span>
-        <a
-          href="#"
-          onClick={(e) => {
-            e.preventDefault();
-            onSwitchToRegister?.();
-          }}
-          className="fw-semibold"
-          style={{ color: "#2563eb", textDecoration: "none", fontSize: 14 }}
+      <div className="login-form-footer">
+        <span className="login-form-footer-text">New to BizMatch? </span>
+        <Link
+          to="/register"
+          onClick={() => onSwitchToRegister?.()}
+          className="login-form-footer-link"
         >
           Create your free account →
-        </a>
+        </Link>
       </div>
     </Form>
   );

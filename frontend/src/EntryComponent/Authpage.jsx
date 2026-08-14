@@ -11,6 +11,7 @@ import {
 
 import LoginForm from "../pages/LoginPage.jsx";
 import RegisterForm from "../pages/RegisterPage.jsx";
+import logo from "../assets/bizmatch-logo.png"; // <-- put your logo file here
 import "./AuthPage.css";
 
 const { Title, Text } = Typography;
@@ -20,19 +21,19 @@ const COPY = {
     eyebrow: "WELCOME BACK",
     heading: (
       <>
-        Build something
+        Find the right
         <br />
-        <span>great together.</span>
+        <span>partner today.</span>
       </>
     ),
-    body: "Find people who complement your skills, share your ambition, and are ready to build the next big thing.",
+    body: "Connect with the right people, share your ambition, and build a stronger future together.",
     bullets: [
       "Discover partners with complementary skills",
       "Connect with people near your location",
       "Build meaningful professional relationships",
     ],
     cardEyebrow: "WELCOME BACK",
-    cardTitle: "Sign in to PartnerMatch",
+    cardTitle: "Sign in to BizMatch",
     cardSubtitle:
       "Continue where you left off and discover your next opportunity.",
   },
@@ -41,12 +42,12 @@ const COPY = {
     eyebrow: "START YOUR JOURNEY",
     heading: (
       <>
-        Don't build
+        Right partner.
         <br />
-        <span>alone.</span>
+        <span>Stronger future.</span>
       </>
     ),
-    body: "PartnerMatch helps founders, entrepreneurs and professionals find the right people to turn ideas into reality.",
+    body: "BizMatch helps founders, entrepreneurs and professionals find the right people to turn ideas into reality.",
     bullets: [
       "Find complementary skills for your venture",
       "Discover collaboration opportunities",
@@ -120,12 +121,14 @@ export default function AuthPage({ initialMode = "login" }) {
 
           {/* Logo */}
           <div className="brand-logo">
-            <div className="brand-logo-icon">
-              <TeamOutlined />
-            </div>
-
-            <div className="brand-name">
-              Partner<span>Match</span>
+            <img src={logo} alt="BizMatch" className="brand-logo-icon" />
+            <div className="brand-name-block">
+              <div className="brand-name">
+                Biz<span>Match</span>
+              </div>
+              <div className="brand-tagline">
+                Right Partner. Stronger Future.
+              </div>
             </div>
           </div>
 
@@ -200,17 +203,19 @@ export default function AuthPage({ initialMode = "login" }) {
       ================================= */}
       <section className="auth-panel">
 
-        {/* Mobile Logo */}
+        {/* =================================
+            MOBILE LOGO — stacked: logo image on top,
+            wordmark + tagline underneath, all centered.
+            Hidden on desktop via CSS.
+        ================================= */}
         <div className="mobile-brand">
-
-          <div className="mobile-brand-icon">
-            <TeamOutlined />
+          <img src={logo} alt="BizMatch" className="mobile-brand-icon" />
+          <div className="mobile-brand-name">
+            Biz<span>Match</span>
           </div>
-
-          <div className="brand-name">
-            Partner<span>Match</span>
+          <div className="mobile-brand-tagline">
+            Right Partner. Stronger Future.
           </div>
-
         </div>
 
 
@@ -327,9 +332,9 @@ export default function AuthPage({ initialMode = "login" }) {
 
           {/* Footer */}
           <div className="auth-footer">
-            © 2026 PartnerMatch
+            © 2026 BizMatch
             <span>•</span>
-            Connect. Collaborate. Grow.
+            Right Partner. Stronger Future.
           </div>
 
         </div>

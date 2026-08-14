@@ -1,5 +1,7 @@
 import { Button, Checkbox, Form, Input, message } from "antd";
 import { ArrowRightOutlined, UserOutlined, MailOutlined, LockOutlined } from "@ant-design/icons";
+import { Link } from "react-router-dom";
+import "./RegisterForm.css";
 
 /**
  * RegisterForm
@@ -24,25 +26,26 @@ export default function RegisterForm({ onSwitchToLogin }) {
       form={form}
       layout="vertical"
       name="register"
+      className="register-form"
       onFinish={onFinish}
       requiredMark={false}
       autoComplete="off"
     >
       <Form.Item
-        label={<span className="fw-semibold">Full name</span>}
+        label={<span className="register-form-label">Full name</span>}
         name="name"
         rules={[{ required: true, message: "Please enter your full name." }]}
       >
         <Input
           size="large"
-          prefix={<UserOutlined className="text-secondary" />}
+          prefix={<UserOutlined className="register-form-icon" />}
           placeholder="Your full name"
-          style={{ height: 48, borderRadius: 10 }}
+          className="register-form-input"
         />
       </Form.Item>
 
       <Form.Item
-        label={<span className="fw-semibold">Email address</span>}
+        label={<span className="register-form-label">Email address</span>}
         name="email"
         rules={[
           { required: true, message: "Please enter your email address." },
@@ -51,14 +54,14 @@ export default function RegisterForm({ onSwitchToLogin }) {
       >
         <Input
           size="large"
-          prefix={<MailOutlined className="text-secondary" />}
+          prefix={<MailOutlined className="register-form-icon" />}
           placeholder="you@example.com"
-          style={{ height: 48, borderRadius: 10 }}
+          className="register-form-input"
         />
       </Form.Item>
 
       <Form.Item
-        label={<span className="fw-semibold">Password</span>}
+        label={<span className="register-form-label">Password</span>}
         name="password"
         hasFeedback
         rules={[
@@ -68,14 +71,14 @@ export default function RegisterForm({ onSwitchToLogin }) {
       >
         <Input.Password
           size="large"
-          prefix={<LockOutlined className="text-secondary" />}
+          prefix={<LockOutlined className="register-form-icon" />}
           placeholder="Create a strong password"
-          style={{ height: 48, borderRadius: 10 }}
+          className="register-form-input"
         />
       </Form.Item>
 
       <Form.Item
-        label={<span className="fw-semibold">Confirm password</span>}
+        label={<span className="register-form-label">Confirm password</span>}
         name="confirm"
         dependencies={["password"]}
         hasFeedback
@@ -93,16 +96,16 @@ export default function RegisterForm({ onSwitchToLogin }) {
       >
         <Input.Password
           size="large"
-          prefix={<LockOutlined className="text-secondary" />}
+          prefix={<LockOutlined className="register-form-icon" />}
           placeholder="Confirm your password"
-          style={{ height: 48, borderRadius: 10 }}
+          className="register-form-input"
         />
       </Form.Item>
 
       <Form.Item
         name="agreement"
         valuePropName="checked"
-        className="mb-4"
+        className="register-form-agreement-item"
         rules={[
           {
             validator: (_, value) =>
@@ -110,19 +113,19 @@ export default function RegisterForm({ onSwitchToLogin }) {
           },
         ]}
       >
-        <Checkbox>
+        <Checkbox className="register-form-agreement">
           I agree to the{" "}
-          <a href="#" onClick={(e) => e.preventDefault()}>
+          <Link to="/terms" className="register-form-inline-link">
             Terms & Conditions
-          </a>{" "}
+          </Link>{" "}
           and{" "}
-          <a href="#" onClick={(e) => e.preventDefault()}>
+          <Link to="/privacy" className="register-form-inline-link">
             Privacy Policy
-          </a>
+          </Link>
         </Checkbox>
       </Form.Item>
 
-      <Form.Item className="mb-3">
+      <Form.Item className="register-form-submit-item">
         <Button
           type="primary"
           htmlType="submit"
@@ -130,27 +133,21 @@ export default function RegisterForm({ onSwitchToLogin }) {
           block
           icon={<ArrowRightOutlined />}
           iconPosition="end"
-          style={{ height: 50, borderRadius: 10, fontWeight: 600, fontSize: 16 }}
+          className="register-form-submit"
         >
           Create my account
         </Button>
       </Form.Item>
 
-      <div className="text-center">
-        <span className="text-secondary" style={{ fontSize: 14 }}>
-          Already have a PartnerMatch account?{" "}
-        </span>
-        <a
-          href="#"
-          onClick={(e) => {
-            e.preventDefault();
-            onSwitchToLogin?.();
-          }}
-          className="fw-semibold"
-          style={{ color: "#2563eb", textDecoration: "none", fontSize: 14 }}
+      <div className="register-form-footer">
+        <span className="register-form-footer-text">Already have a BizMatch account? </span>
+        <Link
+          to="/login"
+          onClick={() => onSwitchToLogin?.()}
+          className="register-form-footer-link"
         >
           Sign in →
-        </a>
+        </Link>
       </div>
     </Form>
   );

@@ -1,0 +1,165 @@
+/* =========================================
+   LOGIN FORM — BizMatch theme
+   Navy / orange accents, refined inputs,
+   generous breathing room between sections.
+========================================= */
+
+.login-form {
+  width: 100%;
+}
+
+.login-form-label {
+  font-weight: 600;
+  font-size: 13.5px;
+  color: #1a2440;
+}
+
+/* -----------------------------------------
+   Inputs
+----------------------------------------- */
+
+.login-form-input.ant-input-affix-wrapper {
+  height: 50px;
+  border-radius: 12px;
+  border: 1.5px solid #e5e9f0;
+  background: #fbfcfe;
+  transition: all 0.2s ease;
+  box-shadow: none;
+}
+
+.login-form-input.ant-input-affix-wrapper:hover {
+  border-color: #ffb347;
+  background: #fff;
+}
+
+.login-form-input.ant-input-affix-wrapper-focused,
+.login-form-input.ant-input-affix-wrapper:focus-within {
+  border-color: #ff8a00;
+  background: #fff;
+  box-shadow: 0 0 0 4px rgba(255, 138, 0, 0.1);
+}
+
+.login-form-icon {
+  color: #9aa5b8;
+  font-size: 16px;
+  margin-right: 4px;
+}
+
+.login-form-input input {
+  font-size: 14.5px;
+}
+
+/* -----------------------------------------
+   Remember me / Forgot password row
+----------------------------------------- */
+
+.login-form-meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  margin-top: -4px;
+  margin-bottom: 30px; /* extra breathing room before the button */
+}
+
+.login-form-remember {
+  font-size: 13.5px;
+  color: #56637a;
+}
+
+.login-form-remember .ant-checkbox-checked .ant-checkbox-inner {
+  background-color: #ff8a00;
+  border-color: #ff8a00;
+}
+
+.login-form-remember:hover .ant-checkbox-inner {
+  border-color: #ff8a00;
+}
+
+.login-form-forgot {
+  color: #ff8a00;
+  font-weight: 600;
+  font-size: 13.5px;
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.login-form-forgot:hover {
+  color: #e67700;
+  text-decoration: underline;
+}
+
+/* -----------------------------------------
+   Submit button
+----------------------------------------- */
+
+.login-form-submit-item {
+  margin-bottom: 22px;
+}
+
+.login-form-submit.ant-btn {
+  height: 52px;
+  border-radius: 12px;
+  font-weight: 650;
+  font-size: 16px;
+  letter-spacing: -0.2px;
+
+  background: linear-gradient(135deg, #ff8a00, #ffb347);
+  border: none;
+
+  box-shadow:
+    0 10px 24px rgba(255, 138, 0, 0.28),
+    0 2px 6px rgba(255, 138, 0, 0.15);
+
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.login-form-submit.ant-btn:hover,
+.login-form-submit.ant-btn:focus {
+  background: linear-gradient(135deg, #ff9f1f, #ffc266) !important;
+  transform: translateY(-1px);
+  box-shadow:
+    0 14px 28px rgba(255, 138, 0, 0.32),
+    0 3px 8px rgba(255, 138, 0, 0.18);
+}
+
+.login-form-submit.ant-btn:active {
+  transform: translateY(0);
+}
+
+/* -----------------------------------------
+   Footer link
+----------------------------------------- */
+
+.login-form-footer {
+  text-align: center;
+}
+
+.login-form-footer-text {
+  color: #7c879a;
+  font-size: 14px;
+}
+
+.login-form-footer-link {
+  color: #ff8a00;
+  font-weight: 650;
+  font-size: 14px;
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.login-form-footer-link:hover {
+  color: #e67700;
+  text-decoration: underline;
+}
+
+/* -----------------------------------------
+   Focus accessibility
+----------------------------------------- */
+
+.login-form-forgot:focus-visible,
+.login-form-footer-link:focus-visible {
+  outline: 2px solid #ff8a00;
+  outline-offset: 3px;
+  border-radius: 4px;
+}
