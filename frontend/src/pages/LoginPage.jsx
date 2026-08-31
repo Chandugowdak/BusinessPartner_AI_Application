@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { Button, Checkbox, Form, Input, message } from "antd";
 import { ArrowRightOutlined, LockOutlined, MailOutlined } from "@ant-design/icons";
 import { Link } from "react-router-dom";
+import { loginUser } from "../DataProvider/AuthDataProvider";
 import "./LoginForm.css";
 
 /**
@@ -13,11 +15,27 @@ import "./LoginForm.css";
  */
 export default function LoginForm({ onSwitchToRegister }) {
   const [form] = Form.useForm();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const onFinish = (values) => {
-    console.log("Login submit:", values);
-    message.success("Welcome back!");
-    form.resetFields(["password"]);
+  const onFinish = async (values) => {
+    try {
+      setIsSubmitting(true);
+      const response = await loginUser({
+        email: values.email,
+        password: values.password,
+      });
+
+      if (response?.token) {
+        localStorage.setItem("token", response.token);
+      }
+
+      message.success(response?.message || "Welcome back!");
+      form.resetFields(["password"]);
+    } catch (error) {
+      message.error(error?.response?.data?.message || "Login failed. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -76,6 +94,8 @@ export default function LoginForm({ onSwitchToRegister }) {
           htmlType="submit"
           size="large"
           block
+          loading={isSubmitting}
+          disabled={isSubmitting}
           icon={<ArrowRightOutlined />}
           iconPosition="end"
           className="login-form-submit"
