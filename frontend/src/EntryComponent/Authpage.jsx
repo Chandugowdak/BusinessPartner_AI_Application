@@ -276,6 +276,7 @@ export default function AuthPage({ initialMode = "login" }) {
 
               {mode === "login" ? (
                 <LoginForm
+                  onLoginSuccess={() => navigate("/home", { replace: true })}
                   onSwitchToRegister={() =>
                     handleModeChange("register")
                   }

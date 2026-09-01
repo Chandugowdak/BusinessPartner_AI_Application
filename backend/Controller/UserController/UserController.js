@@ -4,7 +4,8 @@ const bcrypt = require('bcrypt');
 
 
 const UserLogin = async (req, res) => {
-    const { email, password } = req.body;
+    const email = req.body.email?.trim().toLowerCase();
+    const password = req.body.password;
     try {
         const user = await User.findOne({ email });
         if (!user) {
@@ -38,13 +39,14 @@ const UserRegister = async (req, res) => {
             return res.status(400).json({ message: "Passwords do not match" });
         }
 
-        const existingUser = await User.findOne({ email });
+        const normalizedEmail = email?.trim().toLowerCase();
+        const existingUser = await User.findOne({ email: normalizedEmail });
         if (existingUser) {
             return res.status(400).json({ message: "User already exists" });
         }
         const hashPassword = await bcrypt.hash(password,10);
 
-        const newUser = new User({ name, email, password: hashPassword });
+        const newUser = new User({ name: name?.trim(), email: normalizedEmail, password: hashPassword });
         await newUser.save();
 
         return res.status(201).json({

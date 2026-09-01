@@ -13,7 +13,7 @@ import "./LoginForm.css";
  * Props:
  *  - onSwitchToRegister: () => void   fired when the user taps "Create account"
  */
-export default function LoginForm({ onSwitchToRegister }) {
+export default function LoginForm({ onSwitchToRegister, onLoginSuccess }) {
   const [form] = Form.useForm();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -31,6 +31,7 @@ export default function LoginForm({ onSwitchToRegister }) {
 
       message.success(response?.message || "Welcome back!");
       form.resetFields(["password"]);
+      onLoginSuccess?.();
     } catch (error) {
       message.error(error?.response?.data?.message || "Login failed. Please try again.");
     } finally {
