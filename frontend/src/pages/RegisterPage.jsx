@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Button, Checkbox, Form, Input, message } from "antd";
+import { App as AntApp, Button, Checkbox, Form, Input } from "antd";
 import { ArrowRightOutlined, UserOutlined, MailOutlined, LockOutlined } from "@ant-design/icons";
 import { Link } from "react-router-dom";
 import { registerUser } from "../DataProvider/AuthDataProvider";
@@ -17,6 +17,7 @@ import "./RegisterForm.css";
 export default function RegisterForm({ onSwitchToLogin }) {
   const [form] = Form.useForm();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { notification } = AntApp.useApp();
 
   const onFinish = async (values) => {
     try {
@@ -28,11 +29,17 @@ export default function RegisterForm({ onSwitchToLogin }) {
         confirmPassword: values.confirm,
       });
 
-      message.success(response?.message || "Account created successfully!");
+      notification.success({
+        message: "Registration successful",
+        description: response?.message || "Your account has been created.",
+      });
       form.resetFields(["name", "email", "password", "confirm", "agreement"]);
       onSwitchToLogin?.();
     } catch (error) {
-      message.error(error?.response?.data?.message || "Registration failed. Please try again.");
+      notification.error({
+        message: "Registration failed",
+        description: error?.response?.data?.message || "Please check your details and try again.",
+      });
     } finally {
       setIsSubmitting(false);
     }

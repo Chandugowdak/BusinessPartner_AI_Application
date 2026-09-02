@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Button, Checkbox, Form, Input, message } from "antd";
+import { App as AntApp, Button, Checkbox, Form, Input } from "antd";
 import { ArrowRightOutlined, LockOutlined, MailOutlined } from "@ant-design/icons";
 import { Link } from "react-router-dom";
 import { loginUser } from "../DataProvider/AuthDataProvider";
@@ -16,6 +16,7 @@ import "./LoginForm.css";
 export default function LoginForm({ onSwitchToRegister, onLoginSuccess }) {
   const [form] = Form.useForm();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { notification } = AntApp.useApp();
 
   const onFinish = async (values) => {
     try {
@@ -29,11 +30,17 @@ export default function LoginForm({ onSwitchToRegister, onLoginSuccess }) {
         localStorage.setItem("token", response.token);
       }
 
-      message.success(response?.message || "Welcome back!");
+      notification.success({
+        message: "Login successful",
+        description: response?.message || "Welcome back!",
+      });
       form.resetFields(["password"]);
       onLoginSuccess?.();
     } catch (error) {
-      message.error(error?.response?.data?.message || "Login failed. Please try again.");
+      notification.error({
+        message: "Login failed",
+        description: error?.response?.data?.message || "Please check your details and try again.",
+      });
     } finally {
       setIsSubmitting(false);
     }
