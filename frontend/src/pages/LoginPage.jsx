@@ -29,6 +29,9 @@ export default function LoginForm({ onSwitchToRegister, onLoginSuccess }) {
       if (response?.token) {
         localStorage.setItem("token", response.token);
       }
+      if (response?.user) {
+        localStorage.setItem("currentUser", JSON.stringify(response.user));
+      }
 
       notification.success({
         message: "Login successful",

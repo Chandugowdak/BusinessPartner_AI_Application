@@ -5,6 +5,11 @@ export const loginUser = async (payload) => {
   return response.data;
 };
 
+export const updateUser = async (userId, payload) => {
+  const response = await apiClient.put(`/user/update/${userId}`, payload);
+  return response.data;
+};
+
 export const registerUser = async (payload) => {
   const formattedPayload = {
     ...payload,

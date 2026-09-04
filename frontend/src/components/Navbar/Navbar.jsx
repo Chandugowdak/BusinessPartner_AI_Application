@@ -16,7 +16,7 @@ const navigationItems = [
 
 export default function Navbar() {
   const navigate = useNavigate();
-  const signOut = () => { localStorage.removeItem("token"); navigate("/login", { replace: true }); };
+  const signOut = () => { localStorage.removeItem("token"); localStorage.removeItem("currentUser"); navigate("/login", { replace: true }); };
 
   return <header className="home-nav"><div className="home-nav-inner">
     <BrandLogo />
