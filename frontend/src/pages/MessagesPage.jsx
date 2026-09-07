@@ -1,4 +1,5 @@
 import { MessageOutlined } from "@ant-design/icons";
+import { Alert } from "antd";
 import WorkspacePage from "./WorkspacePage";
 
 const messages = [
@@ -8,8 +9,11 @@ const messages = [
 ];
 
 export default function MessagesPage() {
+  const profile = JSON.parse(localStorage.getItem("currentUser") || "{}");
+  const canMessage = (profile.profileCompletion || 20) >= 75;
   return (
     <WorkspacePage eyebrow="INBOX" title="Messages" description="A focused place for thoughtful introductions and ongoing conversations.">
+      {!canMessage && <Alert type="warning" showIcon message="Complete at least 75% of your profile to send messages." />}
       <section className="workspace-list" aria-label="Messages">
         {messages.map((message) => <article className={`workspace-row message-row${message.unread ? " unread" : ""}`} key={message.name}><div className={`partner-avatar ${message.tone}`}>{message.initials}</div><div className="workspace-row-copy"><h2>{message.name}</h2><p>{message.preview}</p></div><div className="message-meta"><span>{message.time}</span>{message.unread ? <strong>1</strong> : <MessageOutlined />}</div></article>)}
       </section>

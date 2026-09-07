@@ -10,11 +10,22 @@ import HomePage from './pages/HomePage.jsx';
 import MessagesPage from './pages/MessagesPage.jsx';
 import NotificationsPage from './pages/NotificationsPage.jsx';
 import ProfilePage from './pages/ProfilePage.jsx';
+import VerificationModal from './components/VerificationModal/VerificationModal';
+import { useState } from 'react';
 
 import './App.css';
 
 function ProtectedRoute({ children }) {
-  return localStorage.getItem('token') ? <><Navbar />{children}</> : <Navigate to="/login" replace />;
+  const [verificationOpen, setVerificationOpen] = useState(() => {
+    try {
+      const user = JSON.parse(localStorage.getItem('currentUser')) || {};
+      return (user.profileCompletion || 20) < 75 && localStorage.getItem('verificationSkipped') !== 'true';
+    } catch { return false; }
+  });
+  if (!localStorage.getItem('token')) return <Navigate to="/login" replace />;
+  const handleClose = () => { localStorage.setItem('verificationSkipped', 'true'); setVerificationOpen(false); };
+  const handleSaved = () => { localStorage.setItem('verificationSkipped', 'true'); setVerificationOpen(false); };
+  return <><Navbar /><VerificationModal open={verificationOpen} onClose={handleClose} onSaved={handleSaved} />{children}</>;
 }
 
 function App() {

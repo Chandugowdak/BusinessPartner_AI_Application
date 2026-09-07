@@ -1,5 +1,5 @@
-import { EditOutlined, MailOutlined, UserOutlined } from "@ant-design/icons";
-import { App as AntApp, Button, Form, Input, Modal } from "antd";
+import { EditOutlined, MailOutlined, UserOutlined, SafetyCertificateOutlined } from "@ant-design/icons";
+import { App as AntApp, Button, Form, Input, Modal, Progress, Select } from "antd";
 import { useState } from "react";
 import { updateUser } from "../DataProvider/AuthDataProvider";
 import WorkspacePage from "./WorkspacePage";
@@ -22,7 +22,7 @@ export default function ProfilePage() {
   const { notification } = AntApp.useApp();
 
   const openEditor = () => {
-    form.setFieldsValue({ name: profile.name, email: profile.email });
+    form.setFieldsValue(profile);
     setIsEditing(true);
   };
 
@@ -51,7 +51,7 @@ export default function ProfilePage() {
     <WorkspacePage eyebrow="YOUR IDENTITY" title="Profile" description="Keep your contact details up to date so partners know who they are connecting with." action="Edit profile" onAction={openEditor}>
       <section className="profile-layout">
         <article className="profile-card"><div className="profile-avatar">{getInitials(profile.name)}</div><h2>{profile.name || "Your name"}</h2><p>BizMatch member</p><span><MailOutlined /> {profile.email || "No email available"}</span><button className="profile-edit" onClick={openEditor}><EditOutlined /> Edit details</button></article>
-        <article className="profile-details"><span className="workspace-eyebrow">ACCOUNT DETAILS</span><p>These details are connected to your BizMatch account and are saved to your profile.</p><div className="partner-tags"><span className="interest-tag">{profile.name || "Name not set"}</span><span className="interest-tag">{profile.email || "Email not set"}</span></div></article>
+        <article className="profile-details"><span className="workspace-eyebrow">PROFILE COMPLETION</span><Progress percent={profile.profileCompletion || 20} strokeColor="#ff8a00" /><p><SafetyCertificateOutlined /> Identity status: {profile.verificationStatus || "not_started"}</p><div className="partner-tags"><span className="interest-tag">{profile.professionalField || "Professional field not set"}</span><span className="interest-tag">{profile.phone || "Phone not set"}</span></div></article>
       </section>
       <Modal title="Edit profile" open={isEditing} onCancel={() => setIsEditing(false)} footer={null} destroyOnClose>
         <Form form={form} layout="vertical" onFinish={saveProfile} requiredMark={false} className="profile-form">
@@ -61,6 +61,12 @@ export default function ProfilePage() {
           <Form.Item label="Email address" name="email" rules={[{ required: true, message: "Please enter your email address." }, { type: "email", message: "Please enter a valid email address." }]}>
             <Input prefix={<MailOutlined />} placeholder="you@example.com" />
           </Form.Item>
+          <Form.Item label="Phone number" name="phone"><Input placeholder="+91 9876543210" /></Form.Item>
+          <Form.Item label="Professional field" name="professionalField"><Input placeholder="e.g. FinTech, Design, Manufacturing" /></Form.Item>
+          <Form.Item label="Government ID type" name="governmentIdType"><Select options={[{ value: "aadhaar", label: "Aadhaar" }, { value: "pan", label: "PAN Card" }, { value: "other", label: "Other government ID" }]} /></Form.Item>
+          <Form.Item label="Government ID number" name="governmentId"><Input.Password placeholder="Enter to update verification" /></Form.Item>
+          <Form.Item label="LinkedIn profile URL" name="linkedInUrl"><Input placeholder="https://www.linkedin.com/in/your-name" /></Form.Item>
+          <Form.Item label="X profile URL" name="xUrl"><Input placeholder="https://x.com/your-handle" /></Form.Item>
           <div className="profile-form-actions"><Button onClick={() => setIsEditing(false)}>Cancel</Button><Button type="primary" htmlType="submit" loading={isSaving}>Save changes</Button></div>
         </Form>
       </Modal>

@@ -1,6 +1,16 @@
 const User = require('../../model/User/UserSchema.js');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
+const crypto = require('crypto');
+
+const PUBLIC_USER_FIELDS = '_id name email phone linkedInUrl xUrl professionalField governmentIdType governmentIdLast4 verificationStatus';
+const normalizeUrl = (value) => value?.trim().replace(/\/$/, '').toLowerCase();
+const normalizePhone = (value) => value?.replace(/[\s()-]/g, '');
+const hashGovernmentId = (value) => crypto.createHash('sha256').update(value.trim().toUpperCase()).digest('hex');
+const getPublicUser = (user) => ({
+    ...(user.toObject ? user.toObject() : user),
+    profileCompletion: user.getProfileCompletion(),
+});
 
 
 const UserLogin = async (req, res) => {
@@ -28,11 +38,7 @@ const UserLogin = async (req, res) => {
         return res.status(200).json({
             message: "Login successful",
             token,
-            user: {
-                _id: user._id,
-                name: user.name,
-                email: user.email,
-            },
+            user: getPublicUser(user),
         });
     }
     catch (err) {
@@ -71,4 +77,4 @@ const UserRegister = async (req, res) => {
 };
 
 
-module.exports = {UserLogin , UserRegister};
+module.exports = { UserLogin, UserRegister, getPublicUser, hashGovernmentId, normalizePhone, normalizeUrl, PUBLIC_USER_FIELDS };

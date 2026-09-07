@@ -1,0 +1,4 @@
+.verification-intro { color: #64748b; line-height: 1.6; margin-bottom: 16px; }
+.verification-form { margin-top: 18px; }
+.verification-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 8px; }
+.verification-form .ant-form-item { margin-bottom: 14px; }
