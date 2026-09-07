@@ -1,0 +1,1 @@
+export default function Footer() { return <footer className="home-footer"><span>© 2026 BizMatch</span><span>Right partner. Stronger future.</span><div><a href="#privacy">Privacy</a><a href="#terms">Terms</a></div></footer>; }

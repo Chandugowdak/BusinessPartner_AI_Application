@@ -1,6 +1,8 @@
-import { Button, Checkbox, Form, Input, message } from "antd";
+import { useState } from "react";
+import { App as AntApp, Button, Checkbox, Form, Input } from "antd";
 import { ArrowRightOutlined, LockOutlined, MailOutlined } from "@ant-design/icons";
 import { Link } from "react-router-dom";
+import { loginUser } from "../DataProvider/AuthDataProvider";
 import "./LoginForm.css";
 
 /**
@@ -11,13 +13,40 @@ import "./LoginForm.css";
  * Props:
  *  - onSwitchToRegister: () => void   fired when the user taps "Create account"
  */
-export default function LoginForm({ onSwitchToRegister }) {
+export default function LoginForm({ onSwitchToRegister, onLoginSuccess }) {
   const [form] = Form.useForm();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { notification } = AntApp.useApp();
 
-  const onFinish = (values) => {
-    console.log("Login submit:", values);
-    message.success("Welcome back!");
-    form.resetFields(["password"]);
+  const onFinish = async (values) => {
+    try {
+      setIsSubmitting(true);
+      const response = await loginUser({
+        email: values.email,
+        password: values.password,
+      });
+
+      if (response?.token) {
+        localStorage.setItem("token", response.token);
+      }
+      if (response?.user) {
+        localStorage.setItem("currentUser", JSON.stringify(response.user));
+      }
+
+      notification.success({
+        message: "Login successful",
+        description: response?.message || "Welcome back!",
+      });
+      form.resetFields(["password"]);
+      onLoginSuccess?.();
+    } catch (error) {
+      notification.error({
+        message: "Login failed",
+        description: error?.response?.data?.message || "Please check your details and try again.",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -76,6 +105,8 @@ export default function LoginForm({ onSwitchToRegister }) {
           htmlType="submit"
           size="large"
           block
+          loading={isSubmitting}
+          disabled={isSubmitting}
           icon={<ArrowRightOutlined />}
           iconPosition="end"
           className="login-form-submit"

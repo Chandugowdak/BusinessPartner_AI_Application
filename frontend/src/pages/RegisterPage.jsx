@@ -1,6 +1,8 @@
-import { Button, Checkbox, Form, Input, message } from "antd";
+import { useState } from "react";
+import { App as AntApp, Button, Checkbox, Form, Input } from "antd";
 import { ArrowRightOutlined, UserOutlined, MailOutlined, LockOutlined } from "@ant-design/icons";
 import { Link } from "react-router-dom";
+import { registerUser } from "../DataProvider/AuthDataProvider";
 import "./RegisterForm.css";
 
 /**
@@ -14,11 +16,33 @@ import "./RegisterForm.css";
  */
 export default function RegisterForm({ onSwitchToLogin }) {
   const [form] = Form.useForm();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { notification } = AntApp.useApp();
 
-  const onFinish = (values) => {
-    console.log("Register submit:", values);
-    message.success("Account created successfully!");
-    form.resetFields(["password", "confirm", "agreement"]);
+  const onFinish = async (values) => {
+    try {
+      setIsSubmitting(true);
+      const response = await registerUser({
+        name: values.name,
+        email: values.email,
+        password: values.password,
+        confirmPassword: values.confirm,
+      });
+
+      notification.success({
+        message: "Registration successful",
+        description: response?.message || "Your account has been created.",
+      });
+      form.resetFields(["name", "email", "password", "confirm", "agreement"]);
+      onSwitchToLogin?.();
+    } catch (error) {
+      notification.error({
+        message: "Registration failed",
+        description: error?.response?.data?.message || "Please check your details and try again.",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -131,6 +155,8 @@ export default function RegisterForm({ onSwitchToLogin }) {
           htmlType="submit"
           size="large"
           block
+          loading={isSubmitting}
+          disabled={isSubmitting}
           icon={<ArrowRightOutlined />}
           iconPosition="end"
           className="register-form-submit"

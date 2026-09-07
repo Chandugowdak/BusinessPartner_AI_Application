@@ -1,0 +1,30 @@
+.breadcrumbs {
+	position: fixed;
+	top: 94px;
+	left: max(28px, calc((100vw - 1180px) / 2 + 28px));
+	z-index: 20;
+	color: #727b86;
+}
+
+.breadcrumbs .ant-breadcrumb-link,
+.breadcrumbs .ant-breadcrumb-link a {
+	color: #727b86;
+	font: 600 12px Arial, sans-serif;
+	text-decoration: none;
+	text-transform: capitalize;
+}
+
+.breadcrumbs .ant-breadcrumb-link a:hover {
+	color: #e77e0b;
+}
+
+.breadcrumbs .ant-breadcrumb-separator {
+	color: #b3b9b5;
+}
+
+@media (max-width: 600px) {
+	.breadcrumbs {
+		top: 82px;
+		left: 16px;
+	}
+}
