@@ -3,12 +3,12 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
 
-const PUBLIC_USER_FIELDS = '_id name email phone linkedInUrl xUrl professionalField governmentIdType governmentIdLast4 verificationStatus';
+const PUBLIC_USER_FIELDS = '_id name email phone linkedInUrl xUrl professionalField role photoUrl governmentIdType governmentIdLast4 verificationStatus';
 const normalizeUrl = (value) => value?.trim().replace(/\/$/, '').toLowerCase();
 const normalizePhone = (value) => value?.replace(/[\s()-]/g, '');
 const hashGovernmentId = (value) => crypto.createHash('sha256').update(value.trim().toUpperCase()).digest('hex');
 const getPublicUser = (user) => ({
-    ...(user.toObject ? user.toObject() : user),
+    ...Object.fromEntries(PUBLIC_USER_FIELDS.split(' ').filter(Boolean).map((field) => [field, user[field]])),
     profileCompletion: user.getProfileCompletion(),
 });
 

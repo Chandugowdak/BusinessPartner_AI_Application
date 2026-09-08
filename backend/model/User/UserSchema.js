@@ -24,6 +24,8 @@ const UserSchema = new mongoose.Schema({
     linkedInUrl: { type: String, ...optionalUnique },
     xUrl: { type: String, ...optionalUnique },
     professionalField: { type: String, trim: true },
+    role: { type: String, trim: true, maxlength: 80 },
+    photoUrl: { type: String, trim: true },
     governmentIdType: { type: String, enum: ['aadhaar', 'pan', 'other'] },
     governmentIdLast4: { type: String },
     governmentIdHash: { type: String, ...optionalUnique, select: false },

@@ -10,6 +10,20 @@ export const updateUser = async (userId, payload) => {
   return response.data;
 };
 
+export const getUsers = async (params) => {
+  const response = await apiClient.get('/user/users', { params });
+  return response.data;
+};
+
+export const uploadProfilePhoto = async (userId, file) => {
+  const formData = new FormData();
+  formData.append('photo', file);
+  const response = await apiClient.post(`/user/photo/${userId}`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return response.data;
+};
+
 export const registerUser = async (payload) => {
   const formattedPayload = {
     ...payload,

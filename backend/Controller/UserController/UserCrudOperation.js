@@ -1,11 +1,24 @@
 const User = require('../../model/User/UserSchema.js');
 const { getPublicUser, hashGovernmentId, normalizePhone, normalizeUrl, PUBLIC_USER_FIELDS } = require('./UserController');
+const multer = require('multer');
+const fs = require('fs');
+const path = require('path');
 
+const uploadDirectory = path.join(__dirname, '../../uploads');
+fs.mkdirSync(uploadDirectory, { recursive: true });
+const photoUpload = multer({
+    storage: multer.diskStorage({
+        destination: uploadDirectory,
+        filename: (_req, file, callback) => callback(null, `${Date.now()}-${file.originalname.replace(/[^a-zA-Z0-9._-]/g, '_')}`),
+    }),
+    limits: { fileSize: 5 * 1024 * 1024 },
+    fileFilter: (_req, file, callback) => callback(null, file.mimetype.startsWith('image/')),
+});
 
 
 const HandleUserUpdate = async(req,res)=>{
     const { userId } = req.params;
-     const { name, email, phone, linkedInUrl, xUrl, professionalField, governmentIdType, governmentId } = req.body;
+    const { name, email, phone, linkedInUrl, xUrl, professionalField, role, governmentIdType, governmentId } = req.body;
     try{
          if (req.user.userId !== userId) {
           return res.status(403).json({ message: 'You can only update your own profile' });
@@ -21,6 +34,7 @@ const HandleUserUpdate = async(req,res)=>{
         linkedInUrl: normalizeUrl(linkedInUrl),
         xUrl: normalizeUrl(xUrl),
         professionalField: professionalField?.trim(),
+        role: role?.trim(),
     };
 
     if (governmentId !== undefined || governmentIdType !== undefined) {
@@ -57,5 +71,33 @@ const HandleUserUpdate = async(req,res)=>{
     }
 }
 
+const ListUsers = async (req, res) => {
+    try {
+        const search = req.query.search?.trim();
+        const role = req.query.role?.trim();
+        const filters = { _id: { $ne: req.user.userId } };
+        if (search) {
+            const escapedSearch = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            filters.$or = [{ name: { $regex: escapedSearch, $options: 'i' } }, { role: { $regex: escapedSearch, $options: 'i' } }];
+        }
+        if (role) filters.role = role;
+        const users = await User.find(filters).select(PUBLIC_USER_FIELDS).sort({ name: 1 }).limit(100);
+        res.status(200).json({ users: users.map(getPublicUser) });
+    } catch (err) {
+        res.status(500).json({ message: 'Could not load partners', error: err.message });
+    }
+};
 
-module.exports = { HandleUserUpdate };
+const UploadProfilePhoto = [photoUpload.single('photo'), async (req, res) => {
+    try {
+        if (req.user.userId !== req.params.userId) return res.status(403).json({ message: 'You can only update your own profile' });
+        if (!req.file) return res.status(400).json({ message: 'Choose an image up to 5 MB.' });
+        const user = await User.findByIdAndUpdate(req.params.userId, { photoUrl: `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}` }, { new: true }).select(PUBLIC_USER_FIELDS);
+        if (!user) return res.status(404).json({ message: 'User not found' });
+        res.status(200).json({ message: 'Profile photo updated.', user: getPublicUser(user) });
+    } catch (err) {
+        res.status(400).json({ message: 'Could not upload profile photo', error: err.message });
+    }
+}];
+
+module.exports = { HandleUserUpdate, ListUsers, UploadProfilePhoto };
