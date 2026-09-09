@@ -1,7 +1,7 @@
 import { Alert, Button, Input, Select, Spin, Tag } from "antd";
 import { EnvironmentOutlined, PlusOutlined, SearchOutlined } from "@ant-design/icons";
 import { useEffect, useState } from "react";
-import { getUsers } from "../DataProvider/AuthDataProvider";
+import { getUsers, sendConnectionRequest } from "../DataProvider/AuthDataProvider";
 import WorkspacePage from "./WorkspacePage";
 
 const roles = ["Founder", "Investor", "Mentor", "Professional", "Freelancer", "Student", "Other"];
@@ -13,6 +13,8 @@ export default function FindPartnersPage() {
   const [search, setSearch] = useState("");
   const [role, setRole] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [requestingId, setRequestingId] = useState(null);
+  const [requestedIds, setRequestedIds] = useState([]);
   const canConnect = (profile.profileCompletion || 20) >= 75;
   useEffect(() => {
     let isCurrent = true;
@@ -26,6 +28,17 @@ export default function FindPartnersPage() {
     });
     return () => { isCurrent = false; };
   }, [search, role]);
+  const handleRequest = async (userId) => {
+    try {
+      setRequestingId(userId);
+      await sendConnectionRequest(userId);
+      setRequestedIds((current) => [...current, userId]);
+    } catch (error) {
+      window.alert(error?.response?.data?.message || "Could not send connection request.");
+    } finally {
+      setRequestingId(null);
+    }
+  };
   return (
     <WorkspacePage eyebrow="DISCOVER" title="Find your next partner" description="Explore people whose skills and ambitions complement your own." action="Update preferences">
       {!canConnect && <Alert type="warning" showIcon message="Complete at least 75% of your profile to send connection requests." description="You can still browse recommendations while your verification is pending." />}
@@ -38,7 +51,7 @@ export default function FindPartnersPage() {
               <div className="partner-profile-heading"><div><h2>{partner.name}</h2><p>{partner.role || "Role not set"}</p></div><button className="icon-action" aria-label={`Add ${partner.name}`}><PlusOutlined /></button></div>
               <span className="partner-location"><EnvironmentOutlined /> {partner.professionalField || "Open to new connections"}</span>
               <div className="partner-tags">{[partner.role, partner.professionalField].filter(Boolean).map((skill) => <Tag key={skill}>{skill}</Tag>)}</div>
-              <Button type="primary" block disabled={!canConnect}>Send connection request</Button>
+              <Button type="primary" block loading={requestingId === partner._id} disabled={!canConnect || requestedIds.includes(partner._id)} onClick={() => handleRequest(partner._id)}>{requestedIds.includes(partner._id) ? "Request sent" : "Send connection request"}</Button>
             </div>
           </article>
         ))}
