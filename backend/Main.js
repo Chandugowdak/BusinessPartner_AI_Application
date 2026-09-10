@@ -21,6 +21,7 @@ const PORT = process.env.PORT || 5000;
 // Importing the userRoute
 const userRoute = require('./router/UserRouter/Userroute');
 const connectionRoute = require('./router/ConnectionRouter');
+const notificationRoute = require('./router/NotificationRouter');
 
 
 
@@ -30,6 +31,7 @@ const connectionRoute = require('./router/ConnectionRouter');
 
 app.use('/api/user', userRoute); // Mount the userRoute at /api/user
 app.use('/api/connections', connectionRoute);
+app.use('/api/notifications', notificationRoute);
 
 io.use((socket, next) => {
     const token = socket.handshake.auth?.token;

@@ -30,6 +30,21 @@ export const acceptConnection = async (connectionId) => {
   return response.data;
 };
 
+export const rejectConnection = async (connectionId) => {
+  const response = await apiClient.patch(`/connections/${connectionId}/reject`);
+  return response.data;
+};
+
+export const getNotifications = async () => {
+  const response = await apiClient.get('/notifications');
+  return response.data;
+};
+
+export const markNotificationsRead = async () => {
+  const response = await apiClient.patch('/notifications/read');
+  return response.data;
+};
+
 export const getConversation = async (connectionId) => {
   const response = await apiClient.get(`/connections/${connectionId}/messages`);
   return response.data;

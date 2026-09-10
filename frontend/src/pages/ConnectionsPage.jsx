@@ -3,7 +3,8 @@ import { CheckCircleFilled, SendOutlined } from "@ant-design/icons";
 import { Button, Input, Spin } from "antd";
 import { io } from "socket.io-client";
 import WorkspacePage from "./WorkspacePage";
-import { acceptConnection, getConnections, getConversation, sendMessage } from "../DataProvider/AuthDataProvider";
+import { getConnections, getConversation, sendMessage } from "../DataProvider/AuthDataProvider";
+import FriendRequests from "../components/FriendRequests/FriendRequests";
 import "./ConnectionsPage.css";
 
 const getInitials = (name = "") => name.split(" ").filter(Boolean).slice(0, 2).map((part) => part[0]).join("").toUpperCase() || "U";
@@ -49,16 +50,8 @@ export default function ConnectionsPage() {
     return () => { current = false; socket?.off("new-message", handleMessage); };
   }, [selected, socket]);
 
-  const handleAccept = async (connectionId) => {
-    try {
-      const data = await acceptConnection(connectionId);
-      setRequests((current) => current.filter((request) => request._id !== connectionId));
-      setConnections((current) => [...current, data.connection]);
-      setSelected(data.connection);
-    } catch (error) {
-      window.alert(error?.response?.data?.message || "Could not accept this request.");
-    }
-  };
+  const handleAccepted = (connection) => { setRequests((current) => current.filter((request) => request._id !== connection._id)); setConnections((current) => [...current, connection]); setSelected(connection); };
+  const handleRejected = (connectionId) => setRequests((current) => current.filter((request) => request._id !== connectionId));
 
   const handleSend = async (event) => {
     event.preventDefault();
@@ -82,7 +75,7 @@ export default function ConnectionsPage() {
       {isLoading ? <div className="partner-loading"><Spin /></div> : <div className="connections-shell">
         <aside className="connections-sidebar" aria-label="Connections">
           <div className="connections-sidebar-heading"><strong>Chats</strong><span>{connections.length}</span></div>
-          {requests.length > 0 && <div className="connection-requests"><span className="connections-section-label">Requests</span>{requests.map((request) => <div className="connection-request" key={request._id}><div className="chat-avatar">{request.user.photoUrl ? <img src={request.user.photoUrl} alt="" /> : getInitials(request.user.name)}</div><div><strong>{request.user.name}</strong><small>{String(request.requestedBy) === String(profile._id) ? "Request sent" : "Wants to connect"}</small></div>{String(request.requestedBy) !== String(profile._id) && <Button size="small" onClick={() => handleAccept(request._id)}>Accept</Button>}</div>)}</div>}
+          <FriendRequests requests={requests} currentUserId={profile._id} onAccepted={handleAccepted} onRejected={handleRejected} />
           <div className="chat-list">{connections.map((connection) => <button className={`chat-list-item${selected?._id === connection._id ? " selected" : ""}`} key={connection._id} onClick={() => setSelected(connection)}><div className="chat-avatar">{connection.user.photoUrl ? <img src={connection.user.photoUrl} alt="" /> : getInitials(connection.user.name)}</div><div className="chat-list-copy"><strong>{connection.user.name}</strong><span>{connection.lastMessage?.body || connection.user.role || "Connected"}</span></div><time>{formatTime(connection.lastMessage?.createdAt)}</time></button>)}</div>
           {!connections.length && !requests.length && <p className="chat-empty">Accepted connections will appear here.</p>}
         </aside>

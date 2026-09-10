@@ -1,7 +1,8 @@
-const mongoose = require('mongoose');
+ const mongoose = require('mongoose');
 const Connection = require('../model/Connection/ConnectionSchema');
 const User = require('../model/User/UserSchema');
 const Message = require('../model/Message/MessageSchema');
+const Notification = require('../model/Notification/NotificationSchema');
 const { getPublicUser } = require('./UserController/UserController');
 
 const getPairKey = (first, second) => [String(first), String(second)].sort().join(':');
@@ -22,12 +23,16 @@ const SendConnectionRequest = async (req, res) => {
     try {
         const recipient = await User.findById(recipientId);
         if (!recipient) return res.status(404).json({ message: 'User not found' });
-        const connection = await Connection.findOneAndUpdate(
+        let connection = await Connection.findOneAndUpdate(
             { pairKey: getPairKey(requesterId, recipientId) },
             { $setOnInsert: { pairKey: getPairKey(requesterId, recipientId), requester: requesterId, recipient: recipientId, status: 'pending' } },
             { new: true, upsert: true, setDefaultsOnInsert: true },
         );
+        if (connection.status === 'rejected') {
+            connection = await Connection.findByIdAndUpdate(connection._id, { requester: requesterId, recipient: recipientId, status: 'pending' }, { new: true });
+        }
         if (connection.status !== 'pending' || String(connection.requester) !== String(requesterId)) return res.status(409).json({ message: connection.status === 'accepted' ? 'You are already connected.' : 'This connection request already exists.' });
+        await Notification.create({ recipient: recipientId, actor: requesterId, type: 'connection_request', connection: connection._id });
         res.status(201).json({ message: 'Connection request sent.', connectionId: connection._id });
     } catch (err) {
         res.status(500).json({ message: 'Could not send connection request', error: err.message });
@@ -64,9 +69,25 @@ const AcceptConnectionRequest = async (req, res) => {
             { new: true },
         ).populate('requester', 'name email phone linkedInUrl xUrl professionalField role photoUrl governmentIdType governmentIdLast4 verificationStatus').populate('recipient', 'name email phone linkedInUrl xUrl professionalField role photoUrl governmentIdType governmentIdLast4 verificationStatus');
         if (!connection) return res.status(404).json({ message: 'Connection request not found' });
+        await Notification.create({ recipient: connection.requester._id, actor: req.user.userId, type: 'connection_accepted', connection: connection._id });
         res.json({ message: 'Connection accepted.', connection: connectionView(connection, req.user.userId) });
     } catch (err) {
         res.status(500).json({ message: 'Could not accept connection', error: err.message });
+    }
+};
+
+const RejectConnectionRequest = async (req, res) => {
+    try {
+        const connection = await Connection.findOneAndUpdate(
+            { _id: req.params.connectionId, recipient: req.user.userId, status: 'pending' },
+            { status: 'rejected' },
+            { new: true },
+        );
+        if (!connection) return res.status(404).json({ message: 'Connection request not found' });
+        await Notification.deleteMany({ connection: connection._id, recipient: req.user.userId, type: 'connection_request' });
+        res.json({ message: 'Connection request rejected.' });
+    } catch (err) {
+        res.status(500).json({ message: 'Could not reject connection', error: err.message });
     }
 };
 
@@ -99,4 +120,4 @@ const CreateMessage = async (req, res) => {
     }
 };
 
-module.exports = { SendConnectionRequest, ListConnections, AcceptConnectionRequest, GetConversation, CreateMessage, getPairKey, isMember, otherUser };
+module.exports = { SendConnectionRequest, ListConnections, AcceptConnectionRequest, RejectConnectionRequest, GetConversation, CreateMessage, getPairKey, isMember, otherUser };

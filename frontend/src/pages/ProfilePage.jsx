@@ -67,7 +67,7 @@ export default function ProfilePage() {
           <Form.Item label="Email address" name="email" rules={[{ required: true, message: "Please enter your email address." }, { type: "email", message: "Please enter a valid email address." }]}>
             <Input prefix={<MailOutlined />} placeholder="you@example.com" />
           </Form.Item>
-          <Form.Item label="Phone number" name="phone"><Input placeholder="+91 9876543210" /></Form.Item>
+          <Form.Item label="Phone number" name="phone" rules={[{ validator: (_, value) => !value || /^\+?[0-9]{10,15}$/.test(value.replace(/[\s()-]/g, "")) ? Promise.resolve() : Promise.reject(new Error("Use a valid phone number with 10 to 15 digits.")) }]}><Input placeholder="+91 9876543210" /></Form.Item>
           <Form.Item label="Professional field" name="professionalField"><Input placeholder="e.g. FinTech, Design, Manufacturing" /></Form.Item>
           <Form.Item label="Role" name="role" rules={[{ required: true, message: "Choose the role you want partners to see." }]}><Select options={["Founder", "Investor", "Mentor", "Professional", "Freelancer", "Student", "Other"].map((role) => ({ value: role, label: role }))} placeholder="Choose your role" /></Form.Item>
           <Form.Item label="Profile photo"><Upload accept="image/*" maxCount={1} beforeUpload={(file) => { setPhotoFile(file); return false; }} onRemove={() => setPhotoFile(null)} showUploadList={photoFile ? { showPreviewIcon: false } : false}><Button icon={<CameraOutlined />}>Choose photo</Button></Upload><span className="upload-help">JPG, PNG or WEBP up to 5 MB.</span></Form.Item>

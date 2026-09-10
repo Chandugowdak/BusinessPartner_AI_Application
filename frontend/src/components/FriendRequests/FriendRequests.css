@@ -1,0 +1,3 @@
+.friend-requests { border-bottom: 1px solid #e2e6df; }
+.friend-request-actions { display: flex; gap: 4px; }
+.friend-request-actions .ant-btn { display: grid; width: 28px; height: 26px; place-items: center; padding: 0; }

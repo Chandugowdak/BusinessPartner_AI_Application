@@ -1,5 +1,5 @@
 const User = require('../../model/User/UserSchema.js');
-const { getPublicUser, hashGovernmentId, normalizePhone, normalizeUrl, PUBLIC_USER_FIELDS } = require('./UserController');
+const { getPublicUser, hashGovernmentId, normalizePhone, normalizeUrl, isValidPhone, PUBLIC_USER_FIELDS } = require('./UserController');
 const multer = require('multer');
 const fs = require('fs');
 const path = require('path');
@@ -20,7 +20,7 @@ const HandleUserUpdate = async(req,res)=>{
     const { userId } = req.params;
     const { name, email, phone, linkedInUrl, xUrl, professionalField, role, governmentIdType, governmentId } = req.body;
     try{
-         if (req.user.userId !== userId) {
+         if (String(req.user.userId) !== String(userId)) {
           return res.status(403).json({ message: 'You can only update your own profile' });
          }
        const VerifyExistUser = await User.findById(userId);
@@ -37,7 +37,11 @@ const HandleUserUpdate = async(req,res)=>{
         role: role?.trim(),
     };
 
-    if (governmentId !== undefined || governmentIdType !== undefined) {
+    if (!isValidPhone(updates.phone)) {
+        return res.status(400).json({ message: 'Enter a valid phone number with 10 to 15 digits.' });
+    }
+
+    if (governmentId !== undefined && governmentId.trim() !== '') {
         if (!['aadhaar', 'pan', 'other'].includes(governmentIdType)) {
             return res.status(400).json({ message: 'Choose Aadhaar, PAN, or another ID type.' });
         }

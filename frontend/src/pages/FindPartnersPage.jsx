@@ -1,7 +1,7 @@
 import { Alert, Button, Input, Select, Spin, Tag } from "antd";
 import { EnvironmentOutlined, PlusOutlined, SearchOutlined } from "@ant-design/icons";
 import { useEffect, useState } from "react";
-import { getUsers, sendConnectionRequest } from "../DataProvider/AuthDataProvider";
+import { getConnections, getUsers, sendConnectionRequest } from "../DataProvider/AuthDataProvider";
 import WorkspacePage from "./WorkspacePage";
 
 const roles = ["Founder", "Investor", "Mentor", "Professional", "Freelancer", "Student", "Other"];
@@ -28,6 +28,9 @@ export default function FindPartnersPage() {
     });
     return () => { isCurrent = false; };
   }, [search, role]);
+  useEffect(() => {
+    getConnections().then((response) => setRequestedIds((response.requests || []).filter((request) => String(request.requestedBy) === String(profile._id)).map((request) => request.user._id))).catch(() => {});
+  }, [profile._id]);
   const handleRequest = async (userId) => {
     try {
       setRequestingId(userId);
