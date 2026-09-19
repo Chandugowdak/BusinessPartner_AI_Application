@@ -27,9 +27,15 @@ const HandleUserUpdate = async(req,res)=>{
        if(!VerifyExistUser){
         return res.status(404).json({ message: 'User not found' });
        }
+    const normalizedName = name?.trim();
+    const normalizedEmail = email?.trim().toLowerCase();
+    if (!normalizedName) return res.status(400).json({ message: 'Full name is required.' });
+    if (!normalizedEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) return res.status(400).json({ message: 'Enter a valid email address.' });
+    if (!role?.trim()) return res.status(400).json({ message: 'Choose a role for your profile.' });
+
     const updates = {
-        name: name?.trim(),
-        email: email?.trim().toLowerCase(),
+        name: normalizedName,
+        email: normalizedEmail,
         phone: normalizePhone(phone),
         linkedInUrl: normalizeUrl(linkedInUrl),
         xUrl: normalizeUrl(xUrl),
@@ -69,9 +75,15 @@ const HandleUserUpdate = async(req,res)=>{
     }
     catch(err){
         if (err.code === 11000) {
-            return res.status(409).json({ message: 'Phone, social profile, or government ID is already linked to another account.' });
+            const duplicateField = Object.keys(err.keyPattern || {})[0];
+            const labels = { email: 'email address', phone: 'phone number', linkedInUrl: 'LinkedIn profile', xUrl: 'X profile', governmentIdHash: 'government ID' };
+            return res.status(409).json({ message: `That ${labels[duplicateField] || 'profile detail'} is already linked to another account.` });
         }
-        res.status(500).json({ message: 'Error updating user', error: err });
+        if (err.name === 'ValidationError') {
+            const validationMessage = Object.values(err.errors).map((item) => item.message).join(' ');
+            return res.status(400).json({ message: validationMessage || 'Please check your profile details.' });
+        }
+        res.status(500).json({ message: 'Error updating user', error: err.message });
     }
 }
 

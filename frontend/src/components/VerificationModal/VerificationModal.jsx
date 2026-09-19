@@ -11,12 +11,16 @@ const getStoredUser = () => {
 export default function VerificationModal({ open, onClose, onSaved }) {
   const [form] = Form.useForm();
   const [isSaving, setIsSaving] = useState(false);
-  const [profile] = useState(getStoredUser);
+  const [profile, setProfile] = useState(getStoredUser);
   const { notification } = AntApp.useApp();
 
   useEffect(() => {
-    if (open) form.setFieldsValue(profile);
-  }, [open, profile, form]);
+    if (open) {
+      const currentProfile = getStoredUser();
+      setProfile(currentProfile);
+      form.setFieldsValue(currentProfile);
+    }
+  }, [open, form]);
 
   const saveVerification = async (values) => {
     if (!profile._id) return;
@@ -24,6 +28,7 @@ export default function VerificationModal({ open, onClose, onSaved }) {
       setIsSaving(true);
       const response = await updateUser(profile._id, values);
       const updatedUser = response.user;
+      setProfile(updatedUser);
       localStorage.setItem("currentUser", JSON.stringify(updatedUser));
       notification.success({ message: "Verification details saved", description: response.message });
       onSaved?.(updatedUser);

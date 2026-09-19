@@ -78,4 +78,4 @@ const UserRegister = async (req, res) => {
 };
 
 
-module.exports = { UserLogin, UserRegister, getPublicUser, hashGovernmentId, normalizePhone, normalizeUrl, PUBLIC_USER_FIELDS };
+module.exports = { UserLogin, UserRegister, getPublicUser, hashGovernmentId, normalizePhone, normalizeUrl, isValidPhone, PUBLIC_USER_FIELDS };

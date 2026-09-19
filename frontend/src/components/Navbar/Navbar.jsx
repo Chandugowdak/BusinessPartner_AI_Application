@@ -1,5 +1,5 @@
 import { Button } from "antd";
-import { BellOutlined, HomeOutlined, LogoutOutlined, MessageOutlined, SearchOutlined, TeamOutlined, UserOutlined } from "@ant-design/icons";
+import { BellOutlined, HomeOutlined, LogoutOutlined, SearchOutlined, TeamOutlined, UserAddOutlined, UserOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { getNotifications } from "../../DataProvider/AuthDataProvider";
@@ -11,7 +11,7 @@ const navigationItems = [
   { to: "/home", label: "Home", icon: HomeOutlined },
   { to: "/find-partners", label: "Find Partners", icon: SearchOutlined },
   { to: "/connections", label: "My Connections", icon: TeamOutlined },
-  { to: "/messages", label: "Messages", icon: MessageOutlined, badge: 1 },
+  { to: "/requests", label: "My Requests", icon: UserAddOutlined },
   { to: "/notifications", label: "Notifications", icon: BellOutlined, badge: 3 },
   { to: "/profile", label: "Profile", icon: UserOutlined },
 ];

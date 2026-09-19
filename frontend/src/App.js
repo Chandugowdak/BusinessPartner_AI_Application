@@ -7,7 +7,7 @@ import Authpage from './EntryComponent/Authpage.jsx';
 import ConnectionsPage from './pages/ConnectionsPage.jsx';
 import FindPartnersPage from './pages/FindPartnersPage.jsx';
 import HomePage from './pages/HomePage.jsx';
-import MessagesPage from './pages/MessagesPage.jsx';
+import MyRequestsPage from './pages/MyRequestsPage.jsx';
 import NotificationsPage from './pages/NotificationsPage.jsx';
 import ProfilePage from './pages/ProfilePage.jsx';
 import VerificationModal from './components/VerificationModal/VerificationModal';
@@ -41,7 +41,7 @@ function App() {
           <Route path="/home" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
           <Route path="/find-partners" element={<ProtectedRoute><FindPartnersPage /></ProtectedRoute>} />
           <Route path="/connections" element={<ProtectedRoute><ConnectionsPage /></ProtectedRoute>} />
-          <Route path="/messages" element={<ProtectedRoute><MessagesPage /></ProtectedRoute>} />
+          <Route path="/requests" element={<ProtectedRoute><MyRequestsPage /></ProtectedRoute>} />
           <Route path="/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
 
