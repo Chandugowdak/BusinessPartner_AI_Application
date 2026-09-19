@@ -3,12 +3,13 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
 
-const PUBLIC_USER_FIELDS = '_id name email phone linkedInUrl xUrl professionalField governmentIdType governmentIdLast4 verificationStatus';
+const PUBLIC_USER_FIELDS = '_id name email phone linkedInUrl xUrl professionalField role photoUrl governmentIdType governmentIdLast4 verificationStatus';
 const normalizeUrl = (value) => value?.trim().replace(/\/$/, '').toLowerCase();
 const normalizePhone = (value) => value?.replace(/[\s()-]/g, '');
+const isValidPhone = (value) => !value || /^\+?[0-9]{10,15}$/.test(value);
 const hashGovernmentId = (value) => crypto.createHash('sha256').update(value.trim().toUpperCase()).digest('hex');
 const getPublicUser = (user) => ({
-    ...(user.toObject ? user.toObject() : user),
+    ...Object.fromEntries(PUBLIC_USER_FIELDS.split(' ').filter(Boolean).map((field) => [field, user[field]])),
     profileCompletion: user.getProfileCompletion(),
 });
 
@@ -77,4 +78,4 @@ const UserRegister = async (req, res) => {
 };
 
 
-module.exports = { UserLogin, UserRegister, getPublicUser, hashGovernmentId, normalizePhone, normalizeUrl, PUBLIC_USER_FIELDS };
+module.exports = { UserLogin, UserRegister, getPublicUser, hashGovernmentId, normalizePhone, normalizeUrl, isValidPhone, PUBLIC_USER_FIELDS };

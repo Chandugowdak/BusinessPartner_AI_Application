@@ -11,12 +11,16 @@ const getStoredUser = () => {
 export default function VerificationModal({ open, onClose, onSaved }) {
   const [form] = Form.useForm();
   const [isSaving, setIsSaving] = useState(false);
-  const [profile] = useState(getStoredUser);
+  const [profile, setProfile] = useState(getStoredUser);
   const { notification } = AntApp.useApp();
 
   useEffect(() => {
-    if (open) form.setFieldsValue(profile);
-  }, [open, profile, form]);
+    if (open) {
+      const currentProfile = getStoredUser();
+      setProfile(currentProfile);
+      form.setFieldsValue(currentProfile);
+    }
+  }, [open, form]);
 
   const saveVerification = async (values) => {
     if (!profile._id) return;
@@ -24,6 +28,7 @@ export default function VerificationModal({ open, onClose, onSaved }) {
       setIsSaving(true);
       const response = await updateUser(profile._id, values);
       const updatedUser = response.user;
+      setProfile(updatedUser);
       localStorage.setItem("currentUser", JSON.stringify(updatedUser));
       notification.success({ message: "Verification details saved", description: response.message });
       onSaved?.(updatedUser);
@@ -37,7 +42,7 @@ export default function VerificationModal({ open, onClose, onSaved }) {
     <div className="verification-intro">A complete, verified profile helps us recommend trustworthy business partners. Your ID number is stored securely and never shown publicly.</div>
     <Progress percent={profile.profileCompletion || 20} strokeColor="#ff8a00" />
     <Form form={form} layout="vertical" onFinish={saveVerification} requiredMark={false} className="verification-form">
-      <Form.Item label="Phone number" name="phone" rules={[{ required: true, message: "Enter your phone number." }, { pattern: /^\\+?[0-9]{10,15}$/, message: "Use a valid phone number." }]}><Input placeholder="+91 9876543210" /></Form.Item>
+      <Form.Item label="Phone number" name="phone" rules={[{ required: true, message: "Enter your phone number." }, { validator: (_, value) => value && /^\+?[0-9]{10,15}$/.test(value.replace(/[\s()-]/g, "")) ? Promise.resolve() : Promise.reject(new Error("Use a valid phone number with 10 to 15 digits.")) }]}><Input placeholder="+91 9876543210" /></Form.Item>
       <Form.Item label="Professional field" name="professionalField" rules={[{ required: true, message: "Tell us your professional field." }]}><Input placeholder="e.g. FinTech, Design, Manufacturing" /></Form.Item>
       <Form.Item label="Government ID type" name="governmentIdType" rules={[{ required: true, message: "Choose an ID type." }]}><Select options={[{ value: "aadhaar", label: "Aadhaar" }, { value: "pan", label: "PAN Card" }, { value: "other", label: "Other government ID" }]} /></Form.Item>
       <Form.Item label="Government ID number" name="governmentId" rules={[{ required: true, message: "Enter your ID number." }]}><Input.Password placeholder="Your ID number" /></Form.Item>
