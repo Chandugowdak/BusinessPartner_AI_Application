@@ -54,7 +54,7 @@ const ListConnections = async (req, res) => {
         const latestByConnection = new Map(lastMessages.map((item) => [String(item._id), item.message]));
         res.json({
             connections: accepted.map((item) => connectionView(item, req.user.userId, latestByConnection.get(String(item._id)))),
-            requests: connections.filter((item) => item.status === 'pending').map((item) => connectionView(item, req.user.userId)),
+            requests: connections.filter((item) => item.status === 'pending' || item.status === 'rejected').map((item) => connectionView(item, req.user.userId)),
         });
     } catch (err) {
         res.status(500).json({ message: 'Could not load connections', error: err.message });
@@ -91,6 +91,21 @@ const RejectConnectionRequest = async (req, res) => {
     }
 };
 
+const CancelConnectionRequest = async (req, res) => {
+    try {
+        const connection = await Connection.findOneAndUpdate(
+            { _id: req.params.connectionId, requester: req.user.userId, status: 'pending' },
+            { status: 'rejected' },
+            { new: true },
+        );
+        if (!connection) return res.status(404).json({ message: 'Pending request not found' });
+        await Notification.deleteMany({ connection: connection._id, recipient: connection.recipient, type: 'connection_request' });
+        res.json({ message: 'Connection request cancelled.' });
+    } catch (err) {
+        res.status(500).json({ message: 'Could not cancel connection request', error: err.message });
+    }
+};
+
 const GetConversation = async (req, res) => {
     try {
         const connection = await Connection.findOne({ _id: req.params.connectionId, status: 'accepted' })
@@ -99,6 +114,7 @@ const GetConversation = async (req, res) => {
         if (!connection || !isMember(connection, req.user.userId)) return res.status(404).json({ message: 'Conversation not found' });
         const messages = await Message.find({ connection: connection._id }).sort({ createdAt: 1 }).populate('sender', 'name photoUrl');
         await Message.updateMany({ connection: connection._id, recipient: req.user.userId, readAt: null }, { readAt: new Date() });
+        await Notification.deleteMany({ connection: connection._id, recipient: req.user.userId, type: 'message' });
         res.json({ connection: connectionView(connection, req.user.userId), messages });
     } catch (err) {
         res.status(500).json({ message: 'Could not load conversation', error: err.message });
@@ -113,6 +129,7 @@ const CreateMessage = async (req, res) => {
         if (!connection || !isMember(connection, req.user.userId)) return res.status(404).json({ message: 'Conversation not found' });
         const recipientId = otherUser(connection, req.user.userId)._id || otherUser(connection, req.user.userId);
         const message = await Message.create({ connection: connection._id, sender: req.user.userId, recipient: recipientId, body });
+        await Notification.create({ recipient: recipientId, actor: req.user.userId, type: 'message', connection: connection._id });
         const populated = await message.populate('sender', 'name photoUrl');
         res.status(201).json({ message: populated });
     } catch (err) {
@@ -120,4 +137,4 @@ const CreateMessage = async (req, res) => {
     }
 };
 
-module.exports = { SendConnectionRequest, ListConnections, AcceptConnectionRequest, RejectConnectionRequest, GetConversation, CreateMessage, getPairKey, isMember, otherUser };
+module.exports = { SendConnectionRequest, ListConnections, AcceptConnectionRequest, RejectConnectionRequest, CancelConnectionRequest, GetConversation, CreateMessage, getPairKey, isMember, otherUser };

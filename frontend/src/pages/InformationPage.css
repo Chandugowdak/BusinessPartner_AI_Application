@@ -1,0 +1,8 @@
+.information-page { min-height: 100vh; background: #f7f8f5; color: #17223b; }
+.information-main { max-width: 1180px; min-height: 510px; margin: 0 auto; padding: 110px 7% 80px; }
+.information-main h1 { max-width: 680px; margin: 16px 0; font: 500 clamp(42px, 6vw, 72px)/1 Georgia, "Times New Roman", serif; }
+.information-description { max-width: 570px; color: #626c73; font: 17px/1.7 Arial, sans-serif; }
+.information-points { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 54px 0 34px; }
+.information-points article { display: grid; gap: 24px; min-height: 130px; padding: 20px; border-top: 1px solid #d9dfd7; }.information-points span { color: #d97706; font: 700 11px Arial, sans-serif; }.information-points strong { max-width: 190px; font: 500 20px/1.2 Georgia, serif; }
+.information-back { color: #d97706; font: 600 13px Arial, sans-serif; text-decoration: none; }.information-back span { margin-left: 8px; }
+@media (max-width: 700px) { .information-main { min-height: 560px; padding: 70px 22px 56px; }.information-points { grid-template-columns: 1fr; gap: 8px; margin-top: 38px; }.information-points article { min-height: auto; gap: 12px; } }

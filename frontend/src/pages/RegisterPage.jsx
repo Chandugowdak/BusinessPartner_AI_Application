@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { App as AntApp, Button, Checkbox, Form, Input } from "antd";
 import { ArrowRightOutlined, UserOutlined, MailOutlined, LockOutlined } from "@ant-design/icons";
-import { Link } from "react-router-dom";
 import { registerUser } from "../DataProvider/AuthDataProvider";
 import "./RegisterForm.css";
 
@@ -14,7 +13,7 @@ import "./RegisterForm.css";
  * Props:
  *  - onSwitchToLogin: () => void   fired when the user taps "Sign in"
  */
-export default function RegisterForm({ onSwitchToLogin }) {
+export default function RegisterForm({ onSwitchToLogin, onOpenPolicy }) {
   const [form] = Form.useForm();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { notification } = AntApp.useApp();
@@ -139,13 +138,13 @@ export default function RegisterForm({ onSwitchToLogin }) {
       >
         <Checkbox className="register-form-agreement">
           I agree to the{" "}
-          <Link to="/terms" className="register-form-inline-link">
+          <button type="button" onClick={onOpenPolicy} className="register-form-inline-link">
             Terms & Conditions
-          </Link>{" "}
+          </button>{" "}
           and{" "}
-          <Link to="/privacy" className="register-form-inline-link">
+          <button type="button" onClick={onOpenPolicy} className="register-form-inline-link">
             Privacy Policy
-          </Link>
+          </button>
         </Checkbox>
       </Form.Item>
 
@@ -167,13 +166,13 @@ export default function RegisterForm({ onSwitchToLogin }) {
 
       <div className="register-form-footer">
         <span className="register-form-footer-text">Already have a BizMatch account? </span>
-        <Link
-          to="/login"
+        <button
+          type="button"
           onClick={() => onSwitchToLogin?.()}
           className="register-form-footer-link"
         >
           Sign in →
-        </Link>
+        </button>
       </div>
     </Form>
   );

@@ -1,0 +1,85 @@
+.home-footer { background: #fff; border-top: 1px solid #f1f3f7; color: #111827; font-family: Arial, sans-serif; }
+.footer-shell { max-width: 1180px; margin: auto; padding: 0 30px; }
+.footer-main { display: grid; grid-template-columns: 220px 1fr 450px; align-items: start; gap: 42px; padding: 42px 0 50px; }
+.footer-brand { display: flex; align-items: center; gap: 10px; margin-bottom: 52px; color: #2864e8; }.footer-brand strong { font-size: 31px; letter-spacing: -1.5px; }.footer-brand strong span { font-weight: 400; }.footer-brand-mark { display: grid; width: 49px; height: 49px; place-items: center; border-radius: 50%; background: #2864e8; color: #fff; font: 700 32px Georgia, serif; transform: rotate(-12deg); }.footer-intro h3 { margin: 0 0 20px; font-size: 16px; }.footer-social-links { display: flex; gap: 24px; }.footer-social-links a { color: #8293b7; font-size: 18px; }.footer-social-links a:hover { color: #2864e8; }
+.footer-links { display: grid; grid-template-columns: repeat(3, 1fr); gap: 35px; }.footer-group-links { display: flex; flex-direction: column; gap: 21px; }.footer-group-links a, .footer-group-links button { width: fit-content; padding: 0; border: 0; background: none; color: #0d1628; cursor: pointer; font: 16px Arial, sans-serif; text-align: left; text-decoration: none; }.footer-group-links a:hover, .footer-group-links button:hover { color: #2864e8; }
+.footer-app { min-height: 188px; padding: 31px 30px 26px; border: 1px solid #e2e5ec; border-radius: 25px; }.footer-app h2 { margin: 0 0 7px; font-size: 20px; }.footer-app p { margin: 0 0 27px; color: #4f5d77; font-size: 14px; }.footer-store-links { display: flex; gap: 14px; }.footer-store-links a { display: flex; align-items: center; gap: 8px; min-width: 188px; height: 56px; padding: 0 14px; border-radius: 6px; background: #203b50; color: #fff; text-decoration: none; }.footer-store-links small, .footer-store-links b { display: block; }.footer-store-links small { color: #d8e0e7; font-size: 10px; }.footer-store-links b { font-size: 16px; }.play-icon { color: #2fd86d; font-size: 27px; }.apple-icon { color: #fff; font-size: 24px; }.footer-bottom { padding: 16px 0 20px; border-top: 1px solid #e3e7ee; color: #8791a3; font-size: 11px; }
+@media (max-width: 1050px) { .footer-main { grid-template-columns: 180px 1fr; }.footer-app { grid-column: 1 / -1; max-width: 450px; } }
+@media (max-width: 650px) { .footer-shell { padding: 0 20px; }.footer-main { display: block; padding: 32px 0 36px; }.footer-intro { margin-bottom: 35px; }.footer-brand { margin-bottom: 30px; }.footer-links { display: block; }.footer-link-group { margin-bottom: 28px; }.footer-group-links { gap: 16px; }.footer-app { margin-top: 36px; padding: 24px 20px; }.footer-store-links { flex-direction: column; }.footer-store-links a { width: 100%; }.footer-bottom { line-height: 1.7; } }
+
+.footer-group-links a, .footer-group-links button { font-weight: 400; transition: color .2s ease, transform .2s ease; }
+.footer-group-links a:hover, .footer-group-links button:hover { transform: translateX(4px); }
+.footer-social-links a { transition: color .2s ease, transform .2s ease; }
+.footer-social-links a:hover { transform: translateY(-3px) scale(1.08); }
+.footer-store-links a { transition: background .2s ease, transform .2s ease, box-shadow .2s ease; }
+.footer-store-links a:hover { transform: translateY(-3px); box-shadow: 0 8px 18px rgba(32, 59, 80, .18); }
+
+.home-footer {
+	font-family: "Trebuchet MS", Arial, sans-serif;
+}
+
+.footer-brand {
+	gap: 12px;
+	color: #17223b;
+}
+
+.footer-brand strong {
+	font-family: Georgia, "Times New Roman", serif;
+	font-size: 30px;
+	font-weight: 700;
+	letter-spacing: 0;
+}
+
+.footer-brand strong span {
+	color: #e77e0b;
+	font-style: italic;
+}
+
+.footer-intro h3 {
+	color: #17223b;
+	font-family: Georgia, "Times New Roman", serif;
+	font-size: 20px;
+	font-weight: 500;
+	letter-spacing: .1px;
+}
+
+.footer-group-links a,
+.footer-group-links button {
+	color: #26354d;
+	font-family: "Trebuchet MS", Arial, sans-serif;
+	font-size: 14px;
+	font-weight: 500;
+	letter-spacing: .15px;
+}
+
+.footer-app {
+	border-color: #d8dfeb;
+	background: linear-gradient(135deg, #f8fafc 0%, #fff8ed 100%);
+}
+
+.footer-app h2 {
+	color: #17223b;
+	font-family: Georgia, "Times New Roman", serif;
+	font-size: 24px;
+	font-weight: 500;
+}
+
+.footer-app p {
+	line-height: 1.6;
+}
+
+.footer-store-links small {
+	font-weight: 700;
+	letter-spacing: 1px;
+}
+
+.footer-store-links b {
+	font-family: Georgia, "Times New Roman", serif;
+	font-size: 17px;
+	font-weight: 600;
+}
+
+.footer-bottom {
+	font-family: "Trebuchet MS", Arial, sans-serif;
+	letter-spacing: .2px;
+}

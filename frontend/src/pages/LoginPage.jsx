@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { App as AntApp, Button, Checkbox, Form, Input } from "antd";
 import { ArrowRightOutlined, LockOutlined, MailOutlined } from "@ant-design/icons";
-import { Link } from "react-router-dom";
 import { loginUser } from "../DataProvider/AuthDataProvider";
 import "./LoginForm.css";
 
@@ -13,7 +12,7 @@ import "./LoginForm.css";
  * Props:
  *  - onSwitchToRegister: () => void   fired when the user taps "Create account"
  */
-export default function LoginForm({ onSwitchToRegister, onLoginSuccess }) {
+export default function LoginForm({ onSwitchToRegister, onLoginSuccess, onOpenPolicy }) {
   const [form] = Form.useForm();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { notification } = AntApp.useApp();
@@ -94,9 +93,9 @@ export default function LoginForm({ onSwitchToRegister, onLoginSuccess }) {
           <Checkbox className="login-form-remember">Remember me</Checkbox>
         </Form.Item>
 
-        <Link to="/forgot-password" className="login-form-forgot">
+        <button type="button" className="login-form-forgot" onClick={onOpenPolicy}>
           Forgot password?
-        </Link>
+        </button>
       </div>
 
       <Form.Item className="login-form-submit-item">
@@ -117,14 +116,18 @@ export default function LoginForm({ onSwitchToRegister, onLoginSuccess }) {
 
       <div className="login-form-footer">
         <span className="login-form-footer-text">New to BizMatch? </span>
-        <Link
-          to="/register"
+        <button
+          type="button"
           onClick={() => onSwitchToRegister?.()}
           className="login-form-footer-link"
         >
           Create your free account →
-        </Link>
+        </button>
       </div>
+      <p className="login-form-policy-note">
+        By signing in, you agree to our{" "}
+        <button type="button" onClick={onOpenPolicy}>Privacy Policy</button>.
+      </p>
     </Form>
   );
 }

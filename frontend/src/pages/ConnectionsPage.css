@@ -1,3 +1,5 @@
+.message-composer .ant-btn-primary { min-width: 82px; height: 40px; background: #17223b; box-shadow: none; }
+.message-composer .ant-btn-primary[disabled] { color: #8b9496; background: #e7eae5; border-color: #e7eae5; opacity: 1; }
 .connections-shell { display: grid; grid-template-columns: 330px minmax(0, 1fr); min-height: 560px; margin-top: 42px; overflow: hidden; border: 1px solid #e2e6df; border-radius: 8px; background: #fff; }
 .connections-sidebar { border-right: 1px solid #e2e6df; background: #fbfcf9; }
 .connections-sidebar-heading { display: flex; align-items: center; justify-content: space-between; padding: 22px 20px 16px; color: #17223b; font: 18px Georgia, serif; }

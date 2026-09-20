@@ -35,6 +35,11 @@ export const rejectConnection = async (connectionId) => {
   return response.data;
 };
 
+export const cancelConnectionRequest = async (connectionId) => {
+  const response = await apiClient.patch(`/connections/${connectionId}/cancel`);
+  return response.data;
+};
+
 export const getNotifications = async () => {
   const response = await apiClient.get('/notifications');
   return response.data;
@@ -42,6 +47,16 @@ export const getNotifications = async () => {
 
 export const markNotificationsRead = async () => {
   const response = await apiClient.patch('/notifications/read');
+  return response.data;
+};
+
+export const deleteNotification = async (notificationId) => {
+  const response = await apiClient.delete(`/notifications/${notificationId}`);
+  return response.data;
+};
+
+export const deleteAllNotifications = async () => {
+  const response = await apiClient.delete('/notifications');
   return response.data;
 };
 

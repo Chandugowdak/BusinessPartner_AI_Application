@@ -12,6 +12,7 @@ import {
 import LoginForm from "../pages/LoginPage.jsx";
 import RegisterForm from "../pages/RegisterPage.jsx";
 import logo from "../assets/bizmatch-logo.png"; // <-- put your logo file here
+import PolicyModal from "../components/PolicyModal/PolicyModal";
 import "./AuthPage.css";
 
 const { Title, Text } = Typography;
@@ -82,6 +83,7 @@ function MatchGraphic() {
 
 export default function AuthPage({ initialMode = "login" }) {
   const [mode, setMode] = useState(initialMode);
+  const [policyOpen, setPolicyOpen] = useState(false);
   const navigate = useNavigate();
 
   const copy = COPY[mode];
@@ -106,6 +108,7 @@ export default function AuthPage({ initialMode = "login" }) {
   };
 
   return (
+    <>
     <div className="auth-page">
 
       {/* =================================
@@ -280,12 +283,14 @@ export default function AuthPage({ initialMode = "login" }) {
                   onSwitchToRegister={() =>
                     handleModeChange("register")
                   }
+                  onOpenPolicy={() => setPolicyOpen(true)}
                 />
               ) : (
                 <RegisterForm
                   onSwitchToLogin={() =>
                     handleModeChange("login")
                   }
+                  onOpenPolicy={() => setPolicyOpen(true)}
                 />
               )}
 
@@ -330,18 +335,17 @@ export default function AuthPage({ initialMode = "login" }) {
 
           </div>
 
-
-          {/* Footer */}
-          <div className="auth-footer">
-            © 2026 BizMatch
-            <span>•</span>
-            Right Partner. Stronger Future.
-          </div>
-
         </div>
 
       </section>
 
+      <PolicyModal
+        open={policyOpen}
+        onClose={() => setPolicyOpen(false)}
+        onAccept={() => setPolicyOpen(false)}
+      />
+
     </div>
+    </>
   );
 }

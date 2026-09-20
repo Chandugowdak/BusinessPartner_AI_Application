@@ -21,13 +21,14 @@ export default function ConnectionsPage() {
 
   useEffect(() => {
     getConnections().then((data) => {
-      setConnections(data.connections || []);
-      if (data.connections?.length) setSelected(data.connections[0]);
+      const nextConnections = (data.connections || []).filter((connection) => connection?._id && connection.user);
+      setConnections(nextConnections);
+      if (nextConnections.length) setSelected(nextConnections[0]);
     }).catch(() => {}).finally(() => setIsLoading(false));
   }, []);
 
   useEffect(() => {
-    const nextSocket = io("http://localhost:5000", { auth: { token: localStorage.getItem("token") } });
+    const nextSocket = io("http://localhost:5000", { auth: { token: localStorage.getItem("token") }, autoConnect: true });
     setSocket(nextSocket);
     return () => nextSocket.disconnect();
   }, []);
@@ -39,12 +40,14 @@ export default function ConnectionsPage() {
     getConversation(selected._id).then((data) => {
       if (current) setMessages(data.messages || []);
     }).catch(() => { if (current) setMessages([]); }).finally(() => { if (current) setIsConversationLoading(false); });
-    socket?.emit("join-conversation", selected._id);
+    const joinConversation = () => socket.emit("join-conversation", selected._id);
+    if (socket?.connected) joinConversation();
+    socket?.on("connect", joinConversation);
     const handleMessage = (message) => {
       if (String(message.connection) === String(selected._id)) setMessages((currentMessages) => [...currentMessages, message]);
     };
     socket?.on("new-message", handleMessage);
-    return () => { current = false; socket?.off("new-message", handleMessage); };
+    return () => { current = false; socket?.off("connect", joinConversation); socket?.off("new-message", handleMessage); };
   }, [selected, socket]);
 
   const handleSend = async (event) => {
@@ -73,7 +76,7 @@ export default function ConnectionsPage() {
           {!connections.length && <p className="chat-empty">Accepted connections will appear here.</p>}
         </aside>
         <section className="conversation-panel" aria-label="Conversation">
-          {selected ? <><header className="conversation-header"><div className="chat-avatar">{selected.user.photoUrl ? <img src={selected.user.photoUrl} alt="" /> : getInitials(selected.user.name)}</div><div><h2>{selected.user.name}</h2><span>{selected.user.role || "Business partner"}</span></div><CheckCircleFilled /></header><div className="conversation-messages">{isConversationLoading ? <Spin /> : messages.map((message) => <div className={`chat-bubble-row${String(message.sender?._id || message.sender) === String(profile._id) ? " mine" : ""}`} key={message._id}><div className="chat-bubble">{message.body}<time>{formatTime(message.createdAt)}</time></div></div>)}</div><form className="message-composer" onSubmit={handleSend}><Input value={draft} onChange={(event) => setDraft(event.target.value)} placeholder="Write a message..." maxLength={2000} /><Button type="primary" htmlType="submit" icon={<SendOutlined />} disabled={!draft.trim()} aria-label="Send message" /></form></> : <div className="conversation-placeholder"><strong>Your conversations</strong><span>Select an accepted connection to start chatting.</span></div>}
+          {selected ? <><header className="conversation-header"><div className="chat-avatar">{selected.user.photoUrl ? <img src={selected.user.photoUrl} alt="" /> : getInitials(selected.user.name)}</div><div><h2>{selected.user.name}</h2><span>{selected.user.role || "Business partner"}</span></div><CheckCircleFilled /></header><div className="conversation-messages">{isConversationLoading ? <Spin /> : messages.map((message, index) => <div className={`chat-bubble-row${String(message.sender?._id || message.sender) === String(profile._id) ? " mine" : ""}`} key={message._id || `${message.createdAt}-${index}`}><div className="chat-bubble">{message.body}<time>{formatTime(message.createdAt)}</time></div></div>)}</div><form className="message-composer" onSubmit={handleSend}><Input value={draft} onChange={(event) => setDraft(event.target.value)} placeholder="Write a message..." maxLength={2000} /><Button type="primary" htmlType="submit" icon={<SendOutlined />} disabled={!draft.trim()} aria-label="Send message">Send</Button></form></> : <div className="conversation-placeholder"><strong>Your conversations</strong><span>Select an accepted connection to start chatting.</span></div>}
         </section>
       </div>}
     </WorkspacePage>

@@ -8,9 +8,10 @@ const { Server } = require('socket.io');
 const data_base = require('./config/db');
 const Connection = require('./model/Connection/ConnectionSchema');
 const Message = require('./model/Message/MessageSchema');
+const Notification = require('./model/Notification/NotificationSchema');
 const { isMember, otherUser } = require('./Controller/ConnectionController');
 
-dotenv.config();
+dotenv.config({ path: path.join(__dirname, '.env') });
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -22,6 +23,8 @@ const PORT = process.env.PORT || 5000;
 const userRoute = require('./router/UserRouter/Userroute');
 const connectionRoute = require('./router/ConnectionRouter');
 const notificationRoute = require('./router/NotificationRouter');
+const reportRoute = require('./router/ReportRouter');
+const contactRoute = require('./router/ContactRouter');
 
 
 
@@ -32,6 +35,8 @@ const notificationRoute = require('./router/NotificationRouter');
 app.use('/api/user', userRoute); // Mount the userRoute at /api/user
 app.use('/api/connections', connectionRoute);
 app.use('/api/notifications', notificationRoute);
+app.use('/api/reports', reportRoute);
+app.use('/api/contacts', contactRoute);
 
 io.use((socket, next) => {
     const token = socket.handshake.auth?.token;
@@ -58,6 +63,7 @@ io.on('connection', (socket) => {
         if (!connection || !isMember(connection, socket.user.userId)) return callback({ error: 'Conversation not found' });
         const recipient = otherUser(connection, socket.user.userId);
         const message = await Message.create({ connection: connectionId, sender: socket.user.userId, recipient, body: text });
+        await Notification.create({ recipient, actor: socket.user.userId, type: 'message', connection: connection._id });
         const populated = await message.populate('sender', 'name photoUrl');
         io.to(`connection:${connectionId}`).emit('new-message', populated);
         callback({ ok: true });
