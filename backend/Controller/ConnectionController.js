@@ -114,6 +114,7 @@ const GetConversation = async (req, res) => {
         if (!connection || !isMember(connection, req.user.userId)) return res.status(404).json({ message: 'Conversation not found' });
         const messages = await Message.find({ connection: connection._id }).sort({ createdAt: 1 }).populate('sender', 'name photoUrl');
         await Message.updateMany({ connection: connection._id, recipient: req.user.userId, readAt: null }, { readAt: new Date() });
+        await Notification.deleteMany({ connection: connection._id, recipient: req.user.userId, type: 'message' });
         res.json({ connection: connectionView(connection, req.user.userId), messages });
     } catch (err) {
         res.status(500).json({ message: 'Could not load conversation', error: err.message });
@@ -128,6 +129,7 @@ const CreateMessage = async (req, res) => {
         if (!connection || !isMember(connection, req.user.userId)) return res.status(404).json({ message: 'Conversation not found' });
         const recipientId = otherUser(connection, req.user.userId)._id || otherUser(connection, req.user.userId);
         const message = await Message.create({ connection: connection._id, sender: req.user.userId, recipient: recipientId, body });
+        await Notification.create({ recipient: recipientId, actor: req.user.userId, type: 'message', connection: connection._id });
         const populated = await message.populate('sender', 'name photoUrl');
         res.status(201).json({ message: populated });
     } catch (err) {

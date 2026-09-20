@@ -50,6 +50,16 @@ export const markNotificationsRead = async () => {
   return response.data;
 };
 
+export const deleteNotification = async (notificationId) => {
+  const response = await apiClient.delete(`/notifications/${notificationId}`);
+  return response.data;
+};
+
+export const deleteAllNotifications = async () => {
+  const response = await apiClient.delete('/notifications');
+  return response.data;
+};
+
 export const getConversation = async (connectionId) => {
   const response = await apiClient.get(`/connections/${connectionId}/messages`);
   return response.data;

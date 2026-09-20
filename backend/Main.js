@@ -8,9 +8,10 @@ const { Server } = require('socket.io');
 const data_base = require('./config/db');
 const Connection = require('./model/Connection/ConnectionSchema');
 const Message = require('./model/Message/MessageSchema');
+const Notification = require('./model/Notification/NotificationSchema');
 const { isMember, otherUser } = require('./Controller/ConnectionController');
 
-dotenv.config();
+dotenv.config({ path: path.join(__dirname, '.env') });
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -62,6 +63,7 @@ io.on('connection', (socket) => {
         if (!connection || !isMember(connection, socket.user.userId)) return callback({ error: 'Conversation not found' });
         const recipient = otherUser(connection, socket.user.userId);
         const message = await Message.create({ connection: connectionId, sender: socket.user.userId, recipient, body: text });
+        await Notification.create({ recipient, actor: socket.user.userId, type: 'message', connection: connection._id });
         const populated = await message.populate('sender', 'name photoUrl');
         io.to(`connection:${connectionId}`).emit('new-message', populated);
         callback({ ok: true });
