@@ -35,6 +35,11 @@ export const rejectConnection = async (connectionId) => {
   return response.data;
 };
 
+export const cancelConnectionRequest = async (connectionId) => {
+  const response = await apiClient.patch(`/connections/${connectionId}/cancel`);
+  return response.data;
+};
+
 export const getNotifications = async () => {
   const response = await apiClient.get('/notifications');
   return response.data;

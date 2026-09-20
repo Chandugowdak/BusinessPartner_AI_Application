@@ -77,6 +77,10 @@
 }
 
 .login-form-forgot {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
   color: #ff8a00;
   font-weight: 600;
   font-size: 13.5px;
@@ -141,6 +145,10 @@
 }
 
 .login-form-footer-link {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
   color: #ff8a00;
   font-weight: 650;
   font-size: 14px;
@@ -162,4 +170,20 @@
   outline: 2px solid #ff8a00;
   outline-offset: 3px;
   border-radius: 4px;
+}
+
+.login-form-policy-note {
+  margin: 18px 0 0;
+  color: #8b95a5;
+  font-size: 12px;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.login-form-policy-note button {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: #ff8a00;
+  cursor: pointer;
 }
