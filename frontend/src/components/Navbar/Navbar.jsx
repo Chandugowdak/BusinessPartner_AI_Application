@@ -1,6 +1,6 @@
 import { Badge, Button, Dropdown, Spin } from "antd";
 import { BellOutlined, CheckCircleFilled, HomeOutlined, InfoCircleOutlined, LogoutOutlined, SearchOutlined, TeamOutlined, UserAddOutlined, UserOutlined } from "@ant-design/icons";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { getNotifications, markNotificationsRead } from "../../DataProvider/AuthDataProvider";
 import BrandLogo from "./BrandLogo";
@@ -26,7 +26,8 @@ const notificationTime = (date) => date ? new Date(date).toLocaleDateString([], 
 
 export default function Navbar() {
   const navigate = useNavigate();
-  const isAuthenticated = Boolean(localStorage.getItem("token"));
+  const location = useLocation();
+  const isAuthenticated = Boolean(localStorage.getItem("token")) && !["/login", "/register"].includes(location.pathname);
   const [unreadCount, setUnreadCount] = useState(0);
   const [notifications, setNotifications] = useState([]);
   const [isNotificationLoading, setIsNotificationLoading] = useState(false);

@@ -9,6 +9,7 @@ const getInitials = (name = "") => name.split(" ").filter(Boolean).slice(0, 2).m
 
 export default function FindPartnersPage() {
   const profile = JSON.parse(localStorage.getItem("currentUser") || "{}");
+  const profileId = String(profile._id || profile.id || "");
   const [partners, setPartners] = useState([]);
   const [search, setSearch] = useState("");
   const [role, setRole] = useState("");
@@ -29,13 +30,13 @@ export default function FindPartnersPage() {
     return () => { isCurrent = false; };
   }, [search, role]);
   useEffect(() => {
-    getConnections().then((response) => setRequestedIds((response.requests || []).filter((request) => String(request.requestedBy) === String(profile._id) && request.status === "pending").map((request) => ({ userId: request.user._id, connectionId: request._id })))).catch(() => {});
-  }, [profile._id]);
+    getConnections().then((response) => setRequestedIds((response.requests || []).filter((request) => String(request.requestedBy) === profileId && request.status === "pending" && request.user?._id).map((request) => ({ userId: String(request.user._id), connectionId: request._id })))).catch(() => {});
+  }, [profileId]);
   const handleRequest = async (userId) => {
     try {
       setRequestingId(userId);
       const response = await sendConnectionRequest(userId);
-      setRequestedIds((current) => [...current, { userId, connectionId: response?.connectionId }]);
+      setRequestedIds((current) => [...current, { userId: String(userId), connectionId: response?.connectionId }]);
     } catch (error) {
       window.alert(error?.response?.data?.message || "Could not send connection request.");
     } finally {
@@ -43,7 +44,7 @@ export default function FindPartnersPage() {
     }
   };
   const handleCancel = async (userId) => {
-    const request = requestedIds.find((item) => item.userId === userId)?.connectionId;
+    const request = requestedIds.find((item) => String(item.userId) === String(userId))?.connectionId;
     if (!request) return;
     try {
       setRequestingId(userId);
@@ -65,7 +66,7 @@ export default function FindPartnersPage() {
               <div className="partner-profile-heading"><div><h2>{partner.name}</h2><p>{partner.role || "Role not set"}</p></div><button className="icon-action" aria-label={`Add ${partner.name}`}><PlusOutlined /></button></div>
               <span className="partner-location"><EnvironmentOutlined /> {partner.professionalField || "Open to new connections"}</span>
               <div className="partner-tags">{[partner.role, partner.professionalField].filter(Boolean).map((skill) => <Tag key={skill}>{skill}</Tag>)}</div>
-              <Button type={requestedIds.some((item) => item.userId === partner._id) ? "default" : "primary"} danger={requestedIds.some((item) => item.userId === partner._id)} block loading={requestingId === partner._id} disabled={!canConnect && !requestedIds.some((item) => item.userId === partner._id)} onClick={() => requestedIds.some((item) => item.userId === partner._id) ? handleCancel(partner._id) : handleRequest(partner._id)}>{requestedIds.some((item) => item.userId === partner._id) ? "Cancel request" : "Send connection request"}</Button>
+              <Button type={requestedIds.some((item) => String(item.userId) === String(partner._id)) ? "default" : "primary"} danger={requestedIds.some((item) => String(item.userId) === String(partner._id))} block loading={String(requestingId) === String(partner._id)} disabled={!canConnect && !requestedIds.some((item) => String(item.userId) === String(partner._id))} onClick={() => requestedIds.some((item) => String(item.userId) === String(partner._id)) ? handleCancel(partner._id) : handleRequest(partner._id)}>{requestedIds.some((item) => String(item.userId) === String(partner._id)) ? "Cancel request" : "Send connection request"}</Button>
             </div>
           </article>
         ))}

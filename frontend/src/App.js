@@ -1,5 +1,5 @@
 import { App as AntApp } from 'antd';
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 
 import Breadcrumbs from './components/Breadcrumbs/Breadcrumbs';
 import Navbar from './components/Navbar/Navbar';
@@ -10,15 +10,22 @@ import HomePage from './pages/HomePage.jsx';
 import MyRequestsPage from './pages/MyRequestsPage.jsx';
 import ProfilePage from './pages/ProfilePage.jsx';
 import VerificationModal from './components/VerificationModal/VerificationModal';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Footer from './components/Footer/Footer';
 import InformationPage from './pages/InformationPage';
 import HelpPage from './pages/HelpPage';
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
 import ReportPage from './pages/ReportPage';
 import ContactPage from './pages/ContactPage';
+import MatchingGuidePage from './pages/MatchingGuidePage';
 
 import './App.css';
+
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  useEffect(() => { window.scrollTo({ top: 0, left: 0, behavior: 'smooth' }); }, [pathname]);
+  return null;
+}
 
 function ProtectedRoute({ children }) {
   const [verificationOpen, setVerificationOpen] = useState(() => {
@@ -37,6 +44,7 @@ function App() {
   return (
     <BrowserRouter>
       <AntApp>
+        <ScrollToTop />
         <Breadcrumbs />
         <Navbar />
         <Routes>
@@ -45,6 +53,7 @@ function App() {
           <Route path="/register" element={<Authpage initialMode="register" />} />
           <Route path="/about" element={<InformationPage type="about" />} />
           <Route path="/blog" element={<InformationPage type="blog" />} />
+          <Route path="/how-matching-works" element={<MatchingGuidePage />} />
           <Route path="/help" element={<HelpPage />} />
           <Route path="/privacy" element={<PrivacyPolicyPage />} />
           <Route path="/report" element={<ReportPage />} />

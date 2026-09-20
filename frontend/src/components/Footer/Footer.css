@@ -13,3 +13,73 @@
 .footer-social-links a:hover { transform: translateY(-3px) scale(1.08); }
 .footer-store-links a { transition: background .2s ease, transform .2s ease, box-shadow .2s ease; }
 .footer-store-links a:hover { transform: translateY(-3px); box-shadow: 0 8px 18px rgba(32, 59, 80, .18); }
+
+.home-footer {
+	font-family: "Trebuchet MS", Arial, sans-serif;
+}
+
+.footer-brand {
+	gap: 12px;
+	color: #17223b;
+}
+
+.footer-brand strong {
+	font-family: Georgia, "Times New Roman", serif;
+	font-size: 30px;
+	font-weight: 700;
+	letter-spacing: 0;
+}
+
+.footer-brand strong span {
+	color: #e77e0b;
+	font-style: italic;
+}
+
+.footer-intro h3 {
+	color: #17223b;
+	font-family: Georgia, "Times New Roman", serif;
+	font-size: 20px;
+	font-weight: 500;
+	letter-spacing: .1px;
+}
+
+.footer-group-links a,
+.footer-group-links button {
+	color: #26354d;
+	font-family: "Trebuchet MS", Arial, sans-serif;
+	font-size: 14px;
+	font-weight: 500;
+	letter-spacing: .15px;
+}
+
+.footer-app {
+	border-color: #d8dfeb;
+	background: linear-gradient(135deg, #f8fafc 0%, #fff8ed 100%);
+}
+
+.footer-app h2 {
+	color: #17223b;
+	font-family: Georgia, "Times New Roman", serif;
+	font-size: 24px;
+	font-weight: 500;
+}
+
+.footer-app p {
+	line-height: 1.6;
+}
+
+.footer-store-links small {
+	font-weight: 700;
+	letter-spacing: 1px;
+}
+
+.footer-store-links b {
+	font-family: Georgia, "Times New Roman", serif;
+	font-size: 17px;
+	font-weight: 600;
+}
+
+.footer-bottom {
+	font-family: "Trebuchet MS", Arial, sans-serif;
+	letter-spacing: .2px;
+}
