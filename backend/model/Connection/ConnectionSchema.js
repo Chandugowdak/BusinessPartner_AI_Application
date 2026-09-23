@@ -5,6 +5,8 @@ const ConnectionSchema = new mongoose.Schema({
     requester: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     recipient: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     status: { type: String, enum: ['pending', 'accepted', 'rejected'], default: 'pending', index: true },
+    expiresAt: { type: Date },
+    cooldownUntil: { type: Date },
 }, { timestamps: true });
 
 module.exports = mongoose.model('Connection', ConnectionSchema);
