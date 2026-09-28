@@ -32,6 +32,8 @@ const contactRoute = require('./router/ContactRouter');
 
 
 
+
+
 app.use('/api/user', userRoute); // Mount the userRoute at /api/user
 app.use('/api/connections', connectionRoute);
 app.use('/api/notifications', notificationRoute);
