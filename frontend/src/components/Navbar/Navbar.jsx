@@ -9,7 +9,7 @@ import "./Navbar.css";
 
 const navigationItems = [
   { to: "/home", label: "Home", icon: HomeOutlined },
-  { to: "/find-partners", label: "Job", icon: SolutionOutlined },
+  { to: "/jobs", label: "Jobs", icon: SolutionOutlined },
   { to: "/find-partners", label: "Find Partners", icon: SearchOutlined },
   { to: "/connections", label: "My Connections", icon: TeamOutlined },
   { to: "/requests", label: "My Requests", icon: UserAddOutlined },

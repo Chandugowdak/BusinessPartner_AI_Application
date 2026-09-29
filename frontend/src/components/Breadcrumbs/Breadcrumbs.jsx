@@ -5,6 +5,7 @@ const ROUTE_LABELS = {
   login: "Sign in",
   register: "Create account",
   home: "Home",
+  jobs: "Jobs",
   "find-partners": "Find Partners",
   connections: "My Connections",
   messages: "Messages",

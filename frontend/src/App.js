@@ -6,6 +6,7 @@ import Navbar from './components/Navbar/Navbar';
 import Authpage from './EntryComponent/Authpage.jsx';
 import ConnectionsPage from './pages/ConnectionsPage.jsx';
 import FindPartnersPage from './pages/FindPartnersPage.jsx';
+import JobsPage from './pages/JobsPage.jsx';
 import HomePage from './pages/HomePage.jsx';
 import MyRequestsPage from './pages/MyRequestsPage.jsx';
 import ProfilePage from './pages/ProfilePage.jsx';
@@ -70,6 +71,7 @@ function ApplicationRoutes() {
 
           <Route path="/home" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
           <Route path="/find-partners" element={<ProtectedRoute><FindPartnersPage /></ProtectedRoute>} />
+          <Route path="/jobs" element={<ProtectedRoute><JobsPage /></ProtectedRoute>} />
           <Route path="/connections" element={<ProtectedRoute><ConnectionsPage /></ProtectedRoute>} />
           <Route path="/requests" element={<ProtectedRoute><MyRequestsPage /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />

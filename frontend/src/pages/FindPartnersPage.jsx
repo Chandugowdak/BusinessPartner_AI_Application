@@ -12,6 +12,7 @@ export default function FindPartnersPage() {
   const profile = JSON.parse(localStorage.getItem("currentUser") || "{}");
   const profileId = String(profile._id || profile.id || "");
   const [partners, setPartners] = useState([]);
+  const [loadError, setLoadError] = useState("");
   const [search, setSearch] = useState("");
   const [role, setRole] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -25,10 +26,14 @@ export default function FindPartnersPage() {
   useEffect(() => {
     let isCurrent = true;
     setIsLoading(true);
+    setLoadError("");
     getUsers({ search, role }).then((response) => {
       if (isCurrent) setPartners(response.users || []);
-    }).catch(() => {
-      if (isCurrent) setPartners([]);
+    }).catch((error) => {
+      if (isCurrent) {
+        setPartners([]);
+        setLoadError(error?.response?.data?.message || "Could not load partners. Please try again.");
+      }
     }).finally(() => {
       if (isCurrent) setIsLoading(false);
     });
@@ -83,7 +88,7 @@ export default function FindPartnersPage() {
       <div className="find-partners-intro"><div><span className="find-partners-kicker"><TeamOutlined /> NETWORK DIRECTORY</span><h2>People worth knowing</h2><p>Search by name, role, or professional focus. A thoughtful introduction is the start of every strong partnership.</p></div><div className="find-partners-count"><strong>{partners.length}</strong><span>profiles found</span></div></div>
       <section className="discovery-pulse" aria-label="Discovery summary"><div className="pulse-heading"><div><span className="find-partners-kicker"><RocketOutlined /> YOUR DISCOVERY PULSE</span><h2>Make every introduction count</h2></div><span className="pulse-status"><CheckCircleOutlined /> {cooldownUntil ? "Cooldown active" : "Live directory"}</span></div><div className="pulse-metrics"><div><strong>{profileCount}</strong><span>people in view</span></div><div><strong>{roleCount}</strong><span>career paths</span></div><div><strong>{pendingCount}</strong><span>active requests</span></div></div></section>
       <div className="partner-filters"><Input value={search} onChange={(event) => setSearch(event.target.value)} prefix={<SearchOutlined />} placeholder="Search people, roles, or expertise" allowClear /><Select value={role || undefined} onChange={setRole} placeholder="All roles" allowClear options={roles.map((item) => ({ value: item, label: item }))} /></div>
-      {isLoading ? <div className="partner-loading"><Spin /></div> : <section className="partner-grid" aria-label="Suggested partners">
+      {loadError ? <Alert type="error" showIcon message="Could not load partners" description={loadError} /> : isLoading ? <div className="partner-loading"><Spin /></div> : <section className="partner-grid" aria-label="Suggested partners">
         {partners.map((partner) => (
           <article className="partner-profile" key={partner._id}>
             <div className="partner-avatar">{partner.photoUrl ? <img src={partner.photoUrl} alt="" /> : getInitials(partner.name)}</div>
