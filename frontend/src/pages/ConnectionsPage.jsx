@@ -1,32 +1,29 @@
 import { useEffect, useMemo, useState } from "react";
-import { CheckCircleFilled, GlobalOutlined, MessageOutlined, SearchOutlined, SendOutlined, TeamOutlined } from "@ant-design/icons";
+import { CheckCircleFilled, MessageOutlined, SearchOutlined, SendOutlined, UserOutlined } from "@ant-design/icons";
 import { Alert, Button, Input, Spin } from "antd";
 import { io } from "socket.io-client";
-import WorkspacePage from "./WorkspacePage";
 import { getConnections, getConversation, sendMessage } from "../DataProvider/AuthDataProvider";
 import "./ConnectionsPage.css";
 
 const getInitials = (name = "") => name.split(" ").filter(Boolean).slice(0, 2).map((part) => part[0]).join("").toUpperCase() || "U";
-const copy = {
-  en: {
-    eyebrow: "YOUR NETWORK", title: "My connections", description: "Good conversations make good partnerships. Pick up where you left off.",
-    language: "Language", chats: "Your people", connected: "connected", search: "Search connections", noMatches: "No connections match your search.",
-    emptyList: "Your accepted connections will show up here.", conversation: "Conversation", onlineNetwork: "PRIVATE NETWORK", ready: "Ready to talk",
-    connectedPartner: "Business partner", choose: "A good conversation starts here", chooseHint: "Choose a connection to catch up, share an idea, or plan your next move.",
-    noMessages: "No messages yet. Start with a hello.", loadingError: "Could not load connections", loadFallback: "Could not load connections. Please try again.",
-    messagePlaceholder: "Write a message...", send: "Send", messageLabel: "Message", languageEnglish: "English", languageSpanish: "Español",
-  },
-  es: {
-    eyebrow: "TU RED", title: "Mis conexiones", description: "Las buenas conversaciones crean grandes alianzas. Continúa donde lo dejaste.",
-    language: "Idioma", chats: "Tu red", connected: "conectados", search: "Buscar conexiones", noMatches: "No hay conexiones que coincidan con tu búsqueda.",
-    emptyList: "Tus conexiones aceptadas aparecerán aquí.", conversation: "Conversación", onlineNetwork: "RED PRIVADA", ready: "Listo para conversar",
-    connectedPartner: "Socio profesional", choose: "Una buena conversación empieza aquí", chooseHint: "Elige una conexión para ponerte al día, compartir una idea o planear el siguiente paso.",
-    noMessages: "Aún no hay mensajes. Saluda para empezar.", loadingError: "No se pudieron cargar las conexiones", loadFallback: "No se pudieron cargar las conexiones. Inténtalo de nuevo.",
-    messagePlaceholder: "Escribe un mensaje...", send: "Enviar", messageLabel: "Mensaje", languageEnglish: "English", languageSpanish: "Español",
-  },
+const getAvatarHue = (name = "") => [...name].reduce((hue, character) => hue + character.charCodeAt(0), 0) % 360;
+const updateConnectionMessage = (connections, connectionId, message) => connections.map((connection) =>
+  String(connection._id) === String(connectionId) ? { ...connection, lastMessage: message } : connection
+);
+const getLastMessagePreview = (connection, currentUserId) => {
+  const message = connection.lastMessage;
+  if (!message?.body) return connection.user.role || "Start a conversation";
+  return String(message.sender?._id || message.sender) === String(currentUserId) ? `You: ${message.body}` : message.body;
 };
 
-const formatTime = (date, locale) => date ? new Date(date).toLocaleTimeString(locale, { hour: "numeric", minute: "2-digit" }) : "";
+const formatDate = (date) => date ? new Date(date).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "";
+const formatTime = (date) => date ? new Date(date).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }) : "";
+
+function ChatAvatar({ person, className = "" }) {
+  return <div className={`chat-avatar ${className}`} style={{ "--avatar-hue": getAvatarHue(person?.name) }}>
+    {person?.photoUrl ? <img src={person.photoUrl} alt="" /> : person?.name ? getInitials(person.name) : <UserOutlined />}
+  </div>;
+}
 
 export default function ConnectionsPage() {
   const profile = useMemo(() => {
@@ -38,16 +35,13 @@ export default function ConnectionsPage() {
   const [messages, setMessages] = useState([]);
   const [draft, setDraft] = useState("");
   const [search, setSearch] = useState("");
-  const [language, setLanguage] = useState(() => localStorage.getItem("connections-language") === "es" ? "es" : "en");
   const [isLoading, setIsLoading] = useState(true);
   const [isConversationLoading, setIsConversationLoading] = useState(false);
   const [socket, setSocket] = useState(null);
-  const t = copy[language];
-  const locale = language === "es" ? "es-ES" : "en-US";
   const visibleConnections = useMemo(() => connections.filter((connection) => {
-    const query = search.trim().toLocaleLowerCase(locale);
-    return !query || [connection.user.name, connection.user.role, connection.lastMessage?.body].some((value) => value?.toLocaleLowerCase(locale).includes(query));
-  }), [connections, locale, search]);
+    const query = search.trim().toLocaleLowerCase();
+    return !query || [connection.user.name, connection.user.role, connection.lastMessage?.body].some((value) => value?.toLocaleLowerCase().includes(query));
+  }), [connections, search]);
 
   useEffect(() => {
     getConnections().then((data) => {
@@ -55,7 +49,7 @@ export default function ConnectionsPage() {
       setConnections(nextConnections);
       if (nextConnections.length) setSelected(nextConnections[0]);
     }).catch((error) => {
-      setLoadError(error?.response?.data?.message || copy.en.loadFallback);
+      setLoadError(error?.response?.data?.message || "Could not load connections. Please try again.");
     }).finally(() => setIsLoading(false));
   }, []);
 
@@ -77,6 +71,7 @@ export default function ConnectionsPage() {
     socket?.on("connect", joinConversation);
     const handleMessage = (message) => {
       if (String(message.connection) === String(selected._id)) setMessages((currentMessages) => [...currentMessages, message]);
+      setConnections((currentConnections) => updateConnectionMessage(currentConnections, message.connection, message));
     };
     socket?.on("new-message", handleMessage);
     return () => { current = false; socket?.off("connect", joinConversation); socket?.off("new-message", handleMessage); };
@@ -95,45 +90,44 @@ export default function ConnectionsPage() {
       try {
         const data = await sendMessage(selected._id, body);
         setMessages((current) => [...current, data.message]);
+        setConnections((current) => updateConnectionMessage(current, selected._id, data.message));
       } catch { setDraft(body); }
     }
   };
 
-  const changeLanguage = (event) => {
-    const nextLanguage = event.target.value;
-    setLanguage(nextLanguage);
-    localStorage.setItem("connections-language", nextLanguage);
-  };
-
   return (
-    <WorkspacePage eyebrow={t.eyebrow} title={t.title} description={t.description}>
-      <div className="connections-page" lang={language}>
-        <div className="connections-toolbar">
-          <div className="connections-network-note"><span className="connections-network-icon"><TeamOutlined /></span><div><strong>{t.onlineNetwork}</strong><span>{connections.length} {t.connected}</span></div></div>
-          <label className="connections-language"><GlobalOutlined /><span className="visually-hidden">{t.language}</span><select value={language} onChange={changeLanguage} aria-label={t.language}><option value="en">{t.languageEnglish}</option><option value="es">{t.languageSpanish}</option></select></label>
-        </div>
-        {loadError ? <Alert className="connections-alert" type="error" showIcon message={t.loadingError} description={loadError} /> : isLoading ? <div className="connections-loading"><Spin /></div> : <div className="connections-shell">
-          <aside className="connections-sidebar" aria-label={t.chats}>
-            <div className="connections-sidebar-heading"><div><span>{t.chats}</span><strong>{connections.length}</strong></div><p>{connections.length} {t.connected}</p></div>
-            <Input className="connections-search" value={search} onChange={(event) => setSearch(event.target.value)} prefix={<SearchOutlined />} placeholder={t.search} allowClear aria-label={t.search} />
+    <main className="connections-workspace">
+      <header className="connections-intro">
+        <h1>Conversations</h1>
+        <p>Pick up where you left off with your business connections.</p>
+      </header>
+      {loadError ? <Alert className="connections-alert" type="error" showIcon message="Could not load connections" description={loadError} /> : isLoading ? <div className="connections-loading"><Spin /></div> : <div className="connections-shell">
+          <aside className="connections-sidebar" aria-label="Inbox">
+            <div className="connections-sidebar-heading">
+              <ChatAvatar person={profile} className="current-user-avatar" />
+              <div className="current-user-identity"><strong>{profile.name || "Your account"}</strong><span>Your messages</span></div>
+            </div>
+            <Input className="connections-search" value={search} onChange={(event) => setSearch(event.target.value)} prefix={<SearchOutlined />} placeholder="Search messages" allowClear aria-label="Search messages" />
             <div className="chat-list">{visibleConnections.map((connection) => <button type="button" className={`chat-list-item${selected?._id === connection._id ? " selected" : ""}`} key={connection._id} onClick={() => setSelected(connection)} aria-current={selected?._id === connection._id ? "true" : undefined}>
-              <div className="chat-avatar">{connection.user.photoUrl ? <img src={connection.user.photoUrl} alt={connection.user.name || ""} /> : getInitials(connection.user.name)}</div>
-              <div className="chat-list-copy"><strong>{connection.user.name}</strong><span>{connection.lastMessage?.body || connection.user.role || t.connectedPartner}</span></div>
-              <time>{formatTime(connection.lastMessage?.createdAt, locale)}</time>
-            </button>)}</div>
-            {!visibleConnections.length && <div className="chat-empty"><TeamOutlined /><p>{connections.length ? t.noMatches : t.emptyList}</p></div>}
-          </aside>
-          <section className="conversation-panel" aria-label={t.conversation}>
-            {selected ? <>
-              <header className="conversation-header"><div className="chat-avatar">{selected.user.photoUrl ? <img src={selected.user.photoUrl} alt={selected.user.name || ""} /> : getInitials(selected.user.name)}</div><div className="conversation-person"><h2>{selected.user.name}</h2><span>{selected.user.role || t.connectedPartner}</span></div><span className="conversation-status"><CheckCircleFilled /> {t.ready}</span></header>
-              <div className="conversation-messages" aria-live="polite">
-                {isConversationLoading ? <div className="conversation-loading"><Spin /></div> : messages.length ? messages.map((message, index) => <div className={`chat-bubble-row${String(message.sender?._id || message.sender) === String(profile._id) ? " mine" : ""}`} key={message._id || `${message.createdAt}-${index}`}><div className="chat-bubble">{message.body}<time>{formatTime(message.createdAt, locale)}</time></div></div>) : <div className="messages-empty"><span><MessageOutlined /></span><p>{t.noMessages}</p></div>}
+              <ChatAvatar person={connection.user} />
+              <div className="chat-list-copy"><strong>{connection.user.name || "Business partner"}</strong><span>{getLastMessagePreview(connection, profile._id)}</span></div>
+              <div className="chat-list-meta">
+                <time dateTime={connection.lastMessage?.createdAt}>{formatTime(connection.lastMessage?.createdAt)}</time>
+                <time dateTime={connection.lastMessage?.createdAt}>{formatDate(connection.lastMessage?.createdAt)}</time>
               </div>
-              <form className="message-composer" onSubmit={handleSend}><Input value={draft} onChange={(event) => setDraft(event.target.value)} placeholder={t.messagePlaceholder} maxLength={2000} aria-label={t.messageLabel} /><Button type="primary" htmlType="submit" icon={<SendOutlined />} disabled={!draft.trim()} aria-label={t.send}>{t.send}</Button></form>
-            </> : <div className="conversation-placeholder"><span className="placeholder-mark"><MessageOutlined /></span><strong>{t.choose}</strong><span>{connections.length ? t.chooseHint : t.emptyList}</span></div>}
+            </button>)}</div>
+            {!visibleConnections.length && <div className="chat-empty"><MessageOutlined /><p>{connections.length ? "No conversations match your search." : "Your conversations will appear here."}</p></div>}
+          </aside>
+          <section className="conversation-panel" aria-label="Chat conversation">
+            {selected ? <>
+              <header className="conversation-header"><ChatAvatar person={selected.user} /><div className="conversation-person"><h2>{selected.user.name || "Business partner"}</h2><span>{selected.user.role || "Connected"}</span></div><span className="conversation-status"><CheckCircleFilled /> Available</span></header>
+              <div className="conversation-messages" aria-live="polite">
+                {isConversationLoading ? <div className="conversation-loading"><Spin /></div> : messages.length ? messages.map((message, index) => <div className={`chat-bubble-row${String(message.sender?._id || message.sender) === String(profile._id) ? " mine" : ""}`} key={message._id || `${message.createdAt}-${index}`}><div className="chat-bubble">{message.body}<time>{formatTime(message.createdAt)}</time></div></div>) : <div className="messages-empty"><span><MessageOutlined /></span><p>No messages yet. Say hello to get started.</p></div>}
+              </div>
+              <form className="message-composer" onSubmit={handleSend}><Input value={draft} onChange={(event) => setDraft(event.target.value)} placeholder="Write a message..." maxLength={2000} aria-label="Message" /><Button type="primary" htmlType="submit" icon={<SendOutlined />} disabled={!draft.trim()} aria-label="Send message" /></form>
+            </> : <div className="conversation-placeholder"><span className="placeholder-mark"><MessageOutlined /></span><strong>{connections.length ? "Choose a conversation" : "No conversations yet"}</strong><span>{connections.length ? "Select someone from your messages." : "Your accepted connections will appear here."}</span></div>}
           </section>
         </div>}
-      </div>
-    </WorkspacePage>
+    </main>
   );
 }
