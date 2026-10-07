@@ -91,14 +91,22 @@ const ListUsers = async (req, res) => {
     try {
         const search = req.query.search?.trim();
         const role = req.query.role?.trim();
+        const requestedPage = Math.max(1, Number.parseInt(req.query.page, 10) || 1);
+        const pageSize = Math.min(50, Math.max(1, Number.parseInt(req.query.pageSize, 10) || 6));
         const filters = { _id: { $ne: req.user.userId } };
         if (search) {
             const escapedSearch = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
             filters.$or = [{ name: { $regex: escapedSearch, $options: 'i' } }, { role: { $regex: escapedSearch, $options: 'i' } }];
         }
         if (role) filters.role = role;
-        const users = await User.find(filters).select(PUBLIC_USER_FIELDS).sort({ name: 1 }).limit(100);
-        res.status(200).json({ users: users.map(getPublicUser) });
+        const total = await User.countDocuments(filters);
+        const totalPages = Math.ceil(total / pageSize);
+        const page = totalPages ? Math.min(requestedPage, totalPages) : 1;
+        const users = await User.find(filters).select(PUBLIC_USER_FIELDS).sort({ name: 1 }).skip((page - 1) * pageSize).limit(pageSize);
+        res.status(200).json({
+            users: users.map(getPublicUser),
+            pagination: { page, pageSize, total, totalPages },
+        });
     } catch (err) {
         res.status(500).json({ message: 'Could not load partners', error: err.message });
     }

@@ -1,5 +1,5 @@
-import { Alert, Button, Input, Modal, Select, Spin, Tag } from "antd";
-import { BulbOutlined, CheckCircleOutlined, ClockCircleOutlined, EnvironmentOutlined, LinkOutlined, PlusOutlined, RocketOutlined, SearchOutlined, TeamOutlined, UsergroupAddOutlined } from "@ant-design/icons";
+import { Alert, Button, Input, Modal, Pagination, Select, Spin, Tag } from "antd";
+import { BulbOutlined, CheckCircleOutlined, ClockCircleOutlined, EnvironmentOutlined, LinkOutlined, PlusOutlined, RocketOutlined, SearchOutlined, UsergroupAddOutlined } from "@ant-design/icons";
 import { useEffect, useState } from "react";
 import { cancelConnectionRequest, getConnections, getUsers, sendConnectionRequest } from "../DataProvider/AuthDataProvider";
 import WorkspacePage from "./WorkspacePage";
@@ -15,6 +15,9 @@ export default function FindPartnersPage() {
   const [loadError, setLoadError] = useState("");
   const [search, setSearch] = useState("");
   const [role, setRole] = useState("");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(6);
+  const [totalUsers, setTotalUsers] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [requestingId, setRequestingId] = useState(null);
   const [requestedIds, setRequestedIds] = useState([]);
@@ -27,18 +30,23 @@ export default function FindPartnersPage() {
     let isCurrent = true;
     setIsLoading(true);
     setLoadError("");
-    getUsers({ search, role }).then((response) => {
-      if (isCurrent) setPartners(response.users || []);
+    getUsers({ search, role, page, pageSize }).then((response) => {
+      if (isCurrent) {
+        setPartners(response.users || []);
+        setTotalUsers(response.pagination?.total ?? response.users?.length ?? 0);
+        if (response.pagination?.page && response.pagination.page !== page) setPage(response.pagination.page);
+      }
     }).catch((error) => {
       if (isCurrent) {
         setPartners([]);
+        setTotalUsers(0);
         setLoadError(error?.response?.data?.message || "Could not load partners. Please try again.");
       }
     }).finally(() => {
       if (isCurrent) setIsLoading(false);
     });
     return () => { isCurrent = false; };
-  }, [search, role]);
+  }, [search, role, page, pageSize]);
   useEffect(() => {
     getConnections().then((response) => {
       const requests = response.requests || [];
@@ -69,7 +77,7 @@ export default function FindPartnersPage() {
     setIsModalOpen(true);
   };
   const pendingCount = requestedIds.length;
-  const profileCount = partners.length;
+  const profileCount = totalUsers;
   const roleCount = new Set(partners.map((partner) => partner.role).filter(Boolean)).size;
   const handleCancel = async (userId) => {
     const request = requestedIds.find((item) => String(item.userId) === String(userId))?.connectionId;
@@ -85,9 +93,8 @@ export default function FindPartnersPage() {
   return (
     <WorkspacePage eyebrow="DISCOVER PEOPLE" title="Find your next partner" description="Build a trusted network with people whose skills, goals, and experience complement your own." action="My requests">
       {!canConnect && <Alert type="warning" showIcon message="Complete at least 75% of your profile to send connection requests." description="You can still browse recommendations while your verification is pending." />}
-      <div className="find-partners-intro"><div><span className="find-partners-kicker"><TeamOutlined /> NETWORK DIRECTORY</span><h2>People worth knowing</h2><p>Search by name, role, or professional focus. A thoughtful introduction is the start of every strong partnership.</p></div><div className="find-partners-count"><strong>{partners.length}</strong><span>profiles found</span></div></div>
-      <section className="discovery-pulse" aria-label="Discovery summary"><div className="pulse-heading"><div><span className="find-partners-kicker"><RocketOutlined /> YOUR DISCOVERY PULSE</span><h2>Make every introduction count</h2></div><span className="pulse-status"><CheckCircleOutlined /> {cooldownUntil ? "Cooldown active" : "Live directory"}</span></div><div className="pulse-metrics"><div><strong>{profileCount}</strong><span>people in view</span></div><div><strong>{roleCount}</strong><span>career paths</span></div><div><strong>{pendingCount}</strong><span>active requests</span></div></div></section>
-      <div className="partner-filters"><Input value={search} onChange={(event) => setSearch(event.target.value)} prefix={<SearchOutlined />} placeholder="Search people, roles, or expertise" allowClear /><Select value={role || undefined} onChange={setRole} placeholder="All roles" allowClear options={roles.map((item) => ({ value: item, label: item }))} /></div>
+      <section className="discovery-pulse" aria-label="Discovery summary"><div className="pulse-title"><RocketOutlined /><h2>Make every introduction count</h2><span className="pulse-status"><CheckCircleOutlined /> {cooldownUntil ? "Cooldown active" : "Live directory"}</span></div><div className="pulse-metrics"><div><strong>{profileCount}</strong><span>people</span></div><div><strong>{roleCount}</strong><span>career paths</span></div><div><strong>{pendingCount}</strong><span>requests</span></div></div></section>
+      <div className="partner-filters"><Input value={search} onChange={(event) => { setSearch(event.target.value); setPage(1); }} prefix={<SearchOutlined />} placeholder="Search people, roles, or expertise" allowClear /><Select value={role || undefined} onChange={(value) => { setRole(value || ""); setPage(1); }} placeholder="All roles" allowClear options={roles.map((item) => ({ value: item, label: item }))} /></div>
       {loadError ? <Alert type="error" showIcon message="Could not load partners" description={loadError} /> : isLoading ? <div className="partner-loading"><Spin /></div> : <section className="partner-grid" aria-label="Suggested partners">
         {partners.map((partner) => (
           <article className="partner-profile" key={partner._id}>
@@ -103,11 +110,12 @@ export default function FindPartnersPage() {
         ))}
         {!partners.length && <div className="partner-empty">No partners match those filters.</div>}
       </section>}
-      <section className="partner-playbook"><div><span className="find-partners-kicker"><UsergroupAddOutlined /> A BETTER FIRST MOVE</span><h2>Three signals to look for</h2><p>Good partnerships begin with a shared direction and a useful difference.</p></div><div className="playbook-grid"><article><span>01</span><h3>Shared momentum</h3><p>Look for someone building toward a goal you understand.</p></article><article><span>02</span><h3>Useful contrast</h3><p>Different experience can turn a familiar idea into a stronger one.</p></article><article><span>03</span><h3>Easy next step</h3><p>Start with one specific question instead of a broad hello.</p></article></div></section>
-      <Modal title="Send connection request" open={isModalOpen} onCancel={() => setIsModalOpen(false)} footer={[<Button key="cancel" onClick={() => setIsModalOpen(false)}>Keep browsing</Button>, <Button key="send" type="primary" loading={requestingId === selectedPartner?._id} onClick={handleRequest}>Send request</Button>]}>
+      {!loadError && !isLoading && totalUsers > 0 && <div className="partner-pagination"><Pagination current={page} pageSize={pageSize} total={totalUsers} showSizeChanger pageSizeOptions={["6", "12", "24"]} showTotal={(total, range) => `${range[0]}–${range[1]} of ${total} profiles`} onChange={(nextPage, nextPageSize) => { setPage(nextPage); setPageSize(nextPageSize); }} /></div>}
+      <section className="partner-playbook"><div className="playbook-heading"><span className="find-partners-kicker"><UsergroupAddOutlined /> A BETTER FIRST MOVE</span><h2>Start with what matters.</h2></div><div className="playbook-grid"><article><span>01</span><h3>Shared momentum</h3><p>Find someone moving toward a goal you understand.</p></article><article><span>02</span><h3>Useful contrast</h3><p>Look for experience that complements your own.</p></article><article><span>03</span><h3>One clear question</h3><p>Make your first message easy to answer.</p></article></div></section>
+      <Modal className="partner-modal" title="Send connection request" open={isModalOpen} onCancel={() => setIsModalOpen(false)} footer={[<Button key="cancel" onClick={() => setIsModalOpen(false)}>Keep browsing</Button>, <Button key="send" type="primary" loading={requestingId === selectedPartner?._id} onClick={handleRequest}>Send request</Button>]}>
         <div className="connect-modal-copy"><div className="partner-avatar">{selectedPartner?.photoUrl ? <img src={selectedPartner.photoUrl} alt="" /> : getInitials(selectedPartner?.name)}</div><p>You are sending a connection request to <strong>{selectedPartner?.name}</strong>. Requests expire automatically after 7 days, and you can withdraw it any time before they respond.</p></div>
       </Modal>
-      <Modal title={connectNotice?.title} open={Boolean(connectNotice)} onCancel={() => setConnectNotice(null)} footer={<Button type="primary" onClick={() => setConnectNotice(null)}>Understood</Button>}><p className="connect-notice-copy">{connectNotice?.message}</p>{connectNotice?.retryAt ? <p className="connect-notice-time"><ClockCircleOutlined /> Available {new Date(connectNotice.retryAt).toLocaleString([], { dateStyle: "medium", timeStyle: "short" })}</p> : null}</Modal>
+      <Modal className="partner-modal" title={connectNotice?.title} open={Boolean(connectNotice)} onCancel={() => setConnectNotice(null)} footer={<Button type="primary" onClick={() => setConnectNotice(null)}>Understood</Button>}><p className="connect-notice-copy">{connectNotice?.message}</p>{connectNotice?.retryAt ? <p className="connect-notice-time"><ClockCircleOutlined /> Available {new Date(connectNotice.retryAt).toLocaleString([], { dateStyle: "medium", timeStyle: "short" })}</p> : null}</Modal>
     </WorkspacePage>
   );
 }
