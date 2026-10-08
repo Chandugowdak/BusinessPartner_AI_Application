@@ -1,9 +1,23 @@
 .breadcrumbs {
 	position: fixed;
-	top: 94px;
-	left: max(28px, calc((100vw - 1180px) / 2 + 28px));
+	top: 82px;
+	left: calc(var(--sidebar-width, 252px) + 28px);
 	z-index: 20;
 	color: #727b86;
+}
+
+.application-content {
+	min-height: 100vh;
+	padding-top: 68px;
+	transition: margin-left .22s ease;
+}
+
+.application-shell.has-sidebar .application-content {
+	margin-left: var(--sidebar-width, 252px);
+}
+
+.application-shell.sidebar-collapsed.has-sidebar .application-content {
+	margin-left: var(--sidebar-collapsed-width, 76px);
 }
 
 .breadcrumbs .ant-breadcrumb-link,
@@ -22,9 +36,14 @@
 	color: #b3b9b5;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 760px) {
+	.application-shell.has-sidebar .application-content,
+	.application-shell.sidebar-collapsed.has-sidebar .application-content {
+		margin-left: 0;
+	}
+
 	.breadcrumbs {
-		top: 82px;
+		top: 78px;
 		left: 16px;
 	}
 }

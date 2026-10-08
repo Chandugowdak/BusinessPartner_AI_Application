@@ -1,0 +1,266 @@
+.profile-editor-modal .ant-modal-content {
+	overflow: hidden;
+	border: 1px solid #e9e8e1;
+	border-radius: 16px;
+	padding: 0;
+	background: #fff;
+	box-shadow: 0 24px 70px rgba(23, 34, 59, .2);
+}
+
+.profile-editor-modal .ant-modal-header {
+	margin: 0;
+	border-bottom: 1px solid #eceee8;
+	padding: 20px 25px 17px;
+	background: linear-gradient(110deg, #fffaf2, #fff);
+}
+
+.profile-editor-modal .ant-modal-body {
+	max-height: calc(100vh - 130px);
+	overflow-y: auto;
+	padding: 0 25px 22px;
+}
+
+.profile-editor-title {
+	display: flex;
+	align-items: center;
+	gap: 11px;
+	color: #17223b;
+	font: 600 20px/1.3 "Trebuchet MS", Arial, sans-serif;
+}
+
+.profile-editor-title-icon {
+	display: grid;
+	width: 38px;
+	height: 38px;
+	flex: 0 0 38px;
+	place-items: center;
+	border: 1px solid #f0dfbd;
+	border-radius: 11px;
+	background: #fff3dd;
+	color: #a85c12;
+	font-size: 17px;
+}
+
+.profile-editor-intro {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 22px;
+	padding: 17px 0 15px;
+	border-bottom: 1px solid #eceee8;
+}
+
+.profile-editor-intro > div:first-child {
+	min-width: 0;
+}
+
+.profile-editor-intro strong {
+	color: #26354d;
+	font: 600 14px/1.5 "Trebuchet MS", Arial, sans-serif;
+}
+
+.profile-editor-intro p,
+.profile-editor-photo p {
+	margin: 4px 0 0;
+	color: #6d7883;
+	font: 12px/1.55 "Trebuchet MS", Arial, sans-serif;
+}
+
+.profile-editor-progress {
+	width: 155px;
+	flex: 0 0 155px;
+}
+
+.profile-editor-progress span {
+	display: block;
+	margin-bottom: 5px;
+	color: #a85c12;
+	font: 700 10px "Trebuchet MS", Arial, sans-serif;
+	text-align: right;
+}
+
+.profile-editor-progress .ant-progress {
+	line-height: 1;
+}
+
+.profile-editor-progress .ant-progress-inner {
+	background: #eff1eb;
+}
+
+.profile-verification-modal .profile-editor-intro {
+	border: 1px solid #efe5d3;
+	border-radius: 10px;
+	margin-top: 16px;
+	padding: 13px 15px;
+	background: #fffaf2;
+}
+
+.profile-verification-modal .profile-editor-intro p {
+	max-width: 405px;
+}
+
+.profile-editor-form {
+	padding-top: 17px;
+}
+
+.profile-editor-section + .profile-editor-section {
+	margin-top: 4px;
+	border-top: 1px solid #eceee8;
+	padding-top: 15px;
+}
+
+.profile-editor-section-label {
+	display: block;
+	margin-bottom: 12px;
+	color: #34435a;
+	font: 700 10px/1.4 "Trebuchet MS", Arial, sans-serif;
+	letter-spacing: 1.1px;
+	text-transform: uppercase;
+}
+
+.profile-editor-form .ant-form-item {
+	margin-bottom: 12px;
+}
+
+.profile-editor-form .ant-form-item-label {
+	padding-bottom: 4px;
+}
+
+.profile-editor-form .ant-form-item-label > label {
+	color: #596575;
+	font: 600 11px "Trebuchet MS", Arial, sans-serif;
+}
+
+.profile-editor-form .ant-input-affix-wrapper,
+.profile-editor-form .ant-input,
+.profile-editor-form .ant-select-selector {
+	min-height: 39px;
+	border-color: #dfe5de;
+	border-radius: 7px;
+	font-family: "Trebuchet MS", Arial, sans-serif;
+	font-size: 12px;
+}
+
+.profile-editor-form .ant-input-affix-wrapper-focused,
+.profile-editor-form .ant-input:focus,
+.profile-editor-form .ant-select-focused .ant-select-selector {
+	border-color: #d98219;
+	box-shadow: 0 0 0 3px rgba(217, 130, 25, .1);
+}
+
+.profile-editor-form .ant-input-prefix {
+	color: #89938c;
+}
+
+.profile-editor-photo {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+	margin-top: 5px;
+	border: 1px dashed #dfe5de;
+	border-radius: 9px;
+	padding: 12px 14px;
+	background: #fbfcfa;
+}
+
+.profile-editor-photo .profile-editor-section-label {
+	margin: 0;
+}
+
+.profile-editor-photo .ant-btn {
+	border-color: #e0e4dc;
+	border-radius: 7px;
+	color: #34435a;
+	font: 600 11px "Trebuchet MS", Arial, sans-serif;
+}
+
+.profile-editor-actions {
+	position: sticky;
+	bottom: -22px;
+	display: flex;
+	justify-content: flex-end;
+	gap: 9px;
+	margin: 16px -25px -22px;
+	border-top: 1px solid #eceee8;
+	padding: 13px 25px 18px;
+	background: rgba(255, 255, 255, .97);
+}
+
+.profile-editor-actions .ant-btn {
+	min-height: 38px;
+	border-radius: 7px;
+	padding: 0 16px;
+	font: 600 12px "Trebuchet MS", Arial, sans-serif;
+}
+
+.profile-editor-actions .ant-btn-primary {
+	border-color: #17223b;
+	background: #17223b;
+	box-shadow: none;
+}
+
+.profile-editor-actions .ant-btn-primary:hover {
+	border-color: #2c4268;
+	background: #2c4268;
+}
+
+@media (max-width: 600px) {
+	.profile-editor-modal {
+		max-width: calc(100vw - 24px);
+		margin: 12px auto;
+	}
+
+	.profile-editor-modal .ant-modal-header {
+		padding: 17px 17px 14px;
+	}
+
+	.profile-editor-modal .ant-modal-body {
+		max-height: calc(100vh - 110px);
+		padding: 0 17px 19px;
+	}
+
+	.profile-editor-title {
+		font-size: 18px;
+	}
+
+	.profile-editor-intro {
+		align-items: flex-start;
+		flex-direction: column;
+		gap: 11px;
+	}
+
+	.profile-editor-progress {
+		width: 100%;
+		flex-basis: auto;
+	}
+
+	.profile-editor-progress span {
+		text-align: left;
+	}
+
+	.profile-editor-photo {
+		align-items: flex-start;
+		flex-direction: column;
+	}
+
+	.profile-editor-actions {
+		bottom: -19px;
+		flex-direction: column-reverse;
+		margin: 14px -17px -19px;
+		padding: 11px 17px 15px;
+	}
+
+	.profile-editor-actions .ant-btn {
+		width: 100%;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.profile-editor-modal *,
+	.profile-editor-modal *::before,
+	.profile-editor-modal *::after {
+		scroll-behavior: auto !important;
+		transition-duration: .01ms !important;
+	}
+}

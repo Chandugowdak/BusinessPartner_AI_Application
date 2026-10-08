@@ -5,6 +5,10 @@ const Message = require('../model/Message/MessageSchema');
 const Notification = require('../model/Notification/NotificationSchema');
 const { getPublicUser } = require('./UserController/UserController');
 
+const REQUEST_EXPIRY_DAYS = 7;
+const WITHDRAW_COOLDOWN_HOURS = 24;
+const requestExpiry = () => new Date(Date.now() + REQUEST_EXPIRY_DAYS * 24 * 60 * 60 * 1000);
+const withdrawCooldown = () => new Date(Date.now() + WITHDRAW_COOLDOWN_HOURS * 60 * 60 * 1000);
 const getPairKey = (first, second) => [String(first), String(second)].sort().join(':');
 const isMember = (connection, userId) => [String(connection.requester?._id || connection.requester), String(connection.recipient?._id || connection.recipient)].includes(String(userId));
 const otherUser = (connection, userId) => String(connection.requester?._id || connection.requester) === String(userId) ? connection.recipient : connection.requester;
@@ -13,6 +17,9 @@ const connectionView = (connection, userId, lastMessage) => ({
     status: connection.status,
     requestedBy: String(connection.requester?._id || connection.requester),
     user: getPublicUser(otherUser(connection, userId)),
+    createdAt: connection.createdAt,
+    expiresAt: connection.expiresAt,
+    cooldownUntil: connection.cooldownUntil,
     lastMessage: lastMessage ? { body: lastMessage.body, createdAt: lastMessage.createdAt, sender: lastMessage.sender } : null,
 });
 
@@ -25,11 +32,17 @@ const SendConnectionRequest = async (req, res) => {
         if (!recipient) return res.status(404).json({ message: 'User not found' });
         let connection = await Connection.findOneAndUpdate(
             { pairKey: getPairKey(requesterId, recipientId) },
-            { $setOnInsert: { pairKey: getPairKey(requesterId, recipientId), requester: requesterId, recipient: recipientId, status: 'pending' } },
+            { $setOnInsert: { pairKey: getPairKey(requesterId, recipientId), requester: requesterId, recipient: recipientId, status: 'pending', expiresAt: requestExpiry() } },
             { new: true, upsert: true, setDefaultsOnInsert: true },
         );
+        if (connection.status === 'pending' && connection.expiresAt && connection.expiresAt <= new Date()) {
+            connection = await Connection.findByIdAndUpdate(connection._id, { status: 'rejected' }, { new: true });
+        }
+        if (connection.status === 'rejected' && String(connection.requester) === String(requesterId) && connection.cooldownUntil && connection.cooldownUntil > new Date()) {
+            return res.status(429).json({ message: 'You recently withdrew this request. You can reconnect after the 24-hour cooldown.', retryAt: connection.cooldownUntil });
+        }
         if (connection.status === 'rejected') {
-            connection = await Connection.findByIdAndUpdate(connection._id, { requester: requesterId, recipient: recipientId, status: 'pending' }, { new: true });
+            connection = await Connection.findByIdAndUpdate(connection._id, { $set: { requester: requesterId, recipient: recipientId, status: 'pending', expiresAt: requestExpiry() }, $unset: { cooldownUntil: 1 } }, { new: true });
         }
         if (connection.status !== 'pending' || String(connection.requester) !== String(requesterId)) return res.status(409).json({ message: connection.status === 'accepted' ? 'You are already connected.' : 'This connection request already exists.' });
         await Notification.create({ recipient: recipientId, actor: requesterId, type: 'connection_request', connection: connection._id });
@@ -41,6 +54,11 @@ const SendConnectionRequest = async (req, res) => {
 
 const ListConnections = async (req, res) => {
     try {
+        const expiryCutoff = new Date(Date.now() - REQUEST_EXPIRY_DAYS * 24 * 60 * 60 * 1000);
+        await Connection.updateMany(
+            { $or: [{ expiresAt: { $lte: new Date() } }, { expiresAt: { $exists: false }, createdAt: { $lte: expiryCutoff } }], status: 'pending' },
+            { $set: { status: 'rejected' }, $unset: { expiresAt: 1 } },
+        );
         const connections = await Connection.find({ $or: [{ requester: req.user.userId }, { recipient: req.user.userId }] })
             .populate('requester', 'name email phone linkedInUrl xUrl professionalField role photoUrl governmentIdType governmentIdLast4 verificationStatus')
             .populate('recipient', 'name email phone linkedInUrl xUrl professionalField role photoUrl governmentIdType governmentIdLast4 verificationStatus')
@@ -80,7 +98,7 @@ const RejectConnectionRequest = async (req, res) => {
     try {
         const connection = await Connection.findOneAndUpdate(
             { _id: req.params.connectionId, recipient: req.user.userId, status: 'pending' },
-            { status: 'rejected' },
+            { status: 'rejected', cooldownUntil: withdrawCooldown(), $unset: { expiresAt: 1 } },
             { new: true },
         );
         if (!connection) return res.status(404).json({ message: 'Connection request not found' });

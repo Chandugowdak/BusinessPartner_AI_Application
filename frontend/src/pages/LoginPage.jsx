@@ -31,6 +31,7 @@ export default function LoginForm({ onSwitchToRegister, onLoginSuccess, onOpenPo
       if (response?.user) {
         localStorage.setItem("currentUser", JSON.stringify(response.user));
       }
+      localStorage.removeItem("verificationSkipped");
 
       notification.success({
         message: "Login successful",
