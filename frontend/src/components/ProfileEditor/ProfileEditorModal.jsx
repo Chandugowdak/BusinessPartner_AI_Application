@@ -33,7 +33,7 @@ export default function ProfileEditorModal({ open, onClose, onSaved, profile, co
     finally { setIsSaving(false); }
   };
 
-  return <Modal className="profile-editor-modal" open={open} onCancel={onClose} footer={null} destroyOnClose width={680} title={<span className="profile-editor-title"><span className="profile-editor-title-icon"><SafetyCertificateOutlined /></span>{isVerification ? "Complete your profile" : "Edit profile"}</span>}>
+  return <Modal className={`profile-editor-modal${isVerification ? " profile-verification-modal" : ""}`} open={open} onCancel={onClose} footer={null} destroyOnClose width={720} centered title={<span className="profile-editor-title"><span className="profile-editor-title-icon"><SafetyCertificateOutlined /></span>{isVerification ? "Complete your profile" : "Edit profile"}</span>}>
     <div className="profile-editor-intro"><div><strong>{isVerification ? "Help partners get to know you" : "Keep your professional details current"}</strong><p>{isVerification ? "A complete profile helps us make more relevant, trustworthy introductions." : "These details are shown to potential business partners."}</p></div><div className="profile-editor-progress"><span>{completion}% complete</span><Progress percent={completion} showInfo={false} strokeColor="#d97706" /></div></div>
     <Form form={form} layout="vertical" onFinish={saveProfile} requiredMark={false} className="profile-editor-form">
       <div className="profile-editor-section"><span className="profile-editor-section-label">About you</span><Row gutter={16}>

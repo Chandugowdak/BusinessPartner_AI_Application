@@ -98,6 +98,7 @@ export default function ConnectionsPage() {
   return (
     <main className="connections-workspace">
       <header className="connections-intro">
+        <span className="connections-eyebrow">YOUR NETWORK</span>
         <h1>Conversations</h1>
         <p>Pick up where you left off with your business connections.</p>
       </header>

@@ -1,9 +1,9 @@
 import { ArrowRightOutlined } from "@ant-design/icons";
 import "./WorkspacePage.css";
 
-export default function WorkspacePage({ eyebrow, title, description, action, onAction, children }) {
+export default function WorkspacePage({ eyebrow, title, description, action, onAction, children, className = "" }) {
   return (
-    <main className="workspace-page">
+    <main className={`workspace-page ${className}`.trim()}>
       <div className="workspace-page-header">
         <div>
           <span className="workspace-eyebrow">{eyebrow}</span>

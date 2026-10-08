@@ -1,11 +1,12 @@
-import { CheckCircleOutlined, CheckOutlined, CloseCircleOutlined, CloseOutlined, ClockCircleOutlined, SendOutlined, UserAddOutlined } from "@ant-design/icons";
-import { Alert, Button, Empty, Spin, Tabs, Tag } from "antd";
+import { CheckCircleOutlined, CheckOutlined, CloseCircleOutlined, CloseOutlined, ClockCircleOutlined, ReloadOutlined, SearchOutlined, SendOutlined, SortAscendingOutlined, UserAddOutlined } from "@ant-design/icons";
+import { Alert, Button, Empty, Input, Pagination, Select, Spin, Tabs, Tag } from "antd";
 import { useEffect, useMemo, useState } from "react";
 import { acceptConnection, cancelConnectionRequest, getConnections, rejectConnection } from "../DataProvider/AuthDataProvider";
 import WorkspacePage from "./WorkspacePage";
 import "./MyRequestsPage.css";
 
 const getInitials = (name = "") => name.split(" ").filter(Boolean).slice(0, 2).map((part) => part[0]).join("").toUpperCase() || "U";
+const pageSizeOptions = [6, 12, 24];
 const tabs = [
   { key: "sent", label: "Sent requests", icon: <SendOutlined /> },
   { key: "invited", label: "Invited requests", icon: <UserAddOutlined /> },
@@ -28,9 +29,23 @@ export default function MyRequestsPage() {
   const [records, setRecords] = useState({ requests: [], connections: [] });
   const [activeTab, setActiveTab] = useState("sent");
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [loadError, setLoadError] = useState("");
   const [workingId, setWorkingId] = useState(null);
+  const [search, setSearch] = useState("");
+  const [sort, setSort] = useState("newest");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(pageSizeOptions[0]);
 
-  const loadRecords = () => getConnections().then((response) => setRecords({ requests: response.requests || [], connections: response.connections || [] })).catch(() => setRecords({ requests: [], connections: [] }));
+  const loadRecords = async () => {
+    try {
+      const response = await getConnections();
+      setRecords({ requests: response.requests || [], connections: response.connections || [] });
+      setLoadError("");
+    } catch (error) {
+      setLoadError(error?.response?.data?.message || "Could not load your requests. Please try again.");
+    }
+  };
   useEffect(() => { loadRecords().finally(() => setIsLoading(false)); }, []);
 
   const groups = useMemo(() => ({
@@ -53,13 +68,56 @@ export default function MyRequestsPage() {
     } finally { setWorkingId(null); }
   };
 
-  const items = groups[activeTab];
+  const items = useMemo(() => {
+    const query = search.trim().toLocaleLowerCase();
+    return groups[activeTab].filter((item) => {
+      const person = item.user || {};
+      return !query || [person.name, person.role, person.professionalField, person.email].some((value) => value?.toLocaleLowerCase().includes(query));
+    }).sort((first, second) => {
+      if (sort === "name") return (first.user?.name || "").localeCompare(second.user?.name || "");
+      return new Date(second.createdAt || 0) - new Date(first.createdAt || 0);
+    });
+  }, [groups, activeTab, search, sort]);
+  const pageCount = Math.max(1, Math.ceil(items.length / pageSize));
+  const currentPage = Math.min(page, pageCount);
+  const pageItems = items.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  const refreshRecords = async () => {
+    setIsRefreshing(true);
+    await loadRecords();
+    setIsRefreshing(false);
+  };
+  const changeTab = (nextTab) => { setActiveTab(nextTab); setPage(1); };
+  const tabDescriptions = {
+    sent: "Invitations you have sent and can still withdraw.",
+    invited: "People waiting for your reply.",
+    accepted: "Your active business connections.",
+    rejected: "Requests that have been closed.",
+  };
   return <WorkspacePage eyebrow="YOUR NETWORK" title="My requests" description="Track every invitation and connection in one clear workspace.">
+    <section className="request-overview" aria-label="Request activity overview">
+      <div className="request-overview-copy"><span>Request activity</span><p>A clear view of every introduction, from first invite to active connection.</p></div>
+      <div className="request-overview-stats">
+        <div><strong>{groups.invited.length}</strong><span>Needs your reply</span></div>
+        <div><strong>{groups.sent.length}</strong><span>Awaiting reply</span></div>
+        <div><strong>{groups.accepted.length}</strong><span>Connections</span></div>
+        <div><strong>{groups.rejected.length}</strong><span>Closed</span></div>
+      </div>
+    </section>
     {isLoading ? <div className="partner-loading"><Spin /></div> : <>
-      <Tabs className="request-tabs" activeKey={activeTab} onChange={setActiveTab} items={tabs.map((tab) => ({ ...tab, label: <span>{tab.icon} {tab.label} <b>{groups[tab.key].length}</b></span> }))} />
-      <section className="request-card-grid" aria-label={`${activeTab} requests`}>
-        {!items.length ? <div className="request-empty"><Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={activeTab === "sent" ? "No sent requests yet" : activeTab === "invited" ? "No invitations waiting for you" : activeTab === "accepted" ? "No accepted connections yet" : "No rejected requests"} /></div> : items.map((item) => <PersonCard key={item._id} item={item} mode={activeTab} workingId={workingId} onAction={updateRequest} />)}
+      {loadError && <Alert className="request-load-error" type="error" showIcon message={loadError} action={<Button size="small" onClick={refreshRecords}>Try again</Button>} />}
+      <Tabs className="request-tabs" activeKey={activeTab} onChange={changeTab} items={tabs.map((tab) => ({ ...tab, label: <span>{tab.icon}<span>{tab.label}</span><b>{groups[tab.key].length}</b></span> }))} />
+      <div className="request-toolbar">
+        <div className="request-current-copy"><strong>{tabs.find((tab) => tab.key === activeTab)?.label}</strong><span>{tabDescriptions[activeTab]}</span></div>
+        <div className="request-controls">
+          <Input className="request-search" value={search} onChange={(event) => { setSearch(event.target.value); setPage(1); }} prefix={<SearchOutlined />} placeholder="Search people" allowClear aria-label="Search requests" />
+          <Select className="request-sort" value={sort} onChange={(value) => { setSort(value); setPage(1); }} suffixIcon={<SortAscendingOutlined />} aria-label="Sort requests" options={[{ value: "newest", label: "Newest first" }, { value: "name", label: "Name A-Z" }]} />
+          <Button className="request-refresh" icon={<ReloadOutlined />} loading={isRefreshing} onClick={refreshRecords} aria-label="Refresh requests" title="Refresh requests" />
+        </div>
+      </div>
+      <section className="request-card-grid" aria-label={`${activeTab} requests`} aria-live="polite">
+        {!pageItems.length ? <div className="request-empty"><Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={search ? `No matches for “${search}”.` : activeTab === "sent" ? "No sent requests yet" : activeTab === "invited" ? "No invitations waiting for you" : activeTab === "accepted" ? "No accepted connections yet" : "No rejected requests"} /></div> : pageItems.map((item) => <PersonCard key={item._id} item={item} mode={activeTab} workingId={workingId} onAction={updateRequest} />)}
       </section>
+      {items.length > 0 && <div className="request-pagination"><Pagination current={currentPage} pageSize={pageSize} total={items.length} showSizeChanger pageSizeOptions={pageSizeOptions.map(String)} showTotal={(total, range) => `${range[0]}–${range[1]} of ${total}`} onChange={(nextPage, nextPageSize) => { setPage(nextPage); setPageSize(nextPageSize); }} /></div>}
       {activeTab === "invited" && items.length ? <Alert className="request-help" type="info" showIcon icon={<UserAddOutlined />} message="Review the profile details before accepting an invitation." /> : null}
     </>}
   </WorkspacePage>;
