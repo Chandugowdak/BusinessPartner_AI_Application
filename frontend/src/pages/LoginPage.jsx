@@ -10,9 +10,9 @@ import "./LoginForm.css";
  * Meant to be rendered inside <AuthPage /> alongside <RegisterForm />.
  *
  * Props:
- *  - onSwitchToRegister: () => void   fired when the user taps "Create account"
+ *  - onLoginSuccess: () => void   fired after a successful login
  */
-export default function LoginForm({ onSwitchToRegister, onLoginSuccess, onOpenPolicy }) {
+export default function LoginForm({ onLoginSuccess, onOpenPolicy }) {
   const [form] = Form.useForm();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { notification } = AntApp.useApp();
@@ -115,16 +115,6 @@ export default function LoginForm({ onSwitchToRegister, onLoginSuccess, onOpenPo
         </Button>
       </Form.Item>
 
-      <div className="login-form-footer">
-        <span className="login-form-footer-text">New to BizMatch? </span>
-        <button
-          type="button"
-          onClick={() => onSwitchToRegister?.()}
-          className="login-form-footer-link"
-        >
-          Create your free account →
-        </button>
-      </div>
       <p className="login-form-policy-note">
         By signing in, you agree to our{" "}
         <button type="button" onClick={onOpenPolicy}>Privacy Policy</button>.
