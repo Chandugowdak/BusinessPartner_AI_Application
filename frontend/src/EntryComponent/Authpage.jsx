@@ -280,16 +280,11 @@ export default function AuthPage({ initialMode = "login" }) {
               {mode === "login" ? (
                 <LoginForm
                   onLoginSuccess={() => navigate("/home", { replace: true })}
-                  onSwitchToRegister={() =>
-                    handleModeChange("register")
-                  }
                   onOpenPolicy={() => setPolicyOpen(true)}
                 />
               ) : (
                 <RegisterForm
-                  onSwitchToLogin={() =>
-                    handleModeChange("login")
-                  }
+                  onSwitchToLogin={() => handleModeChange("login")}
                   onOpenPolicy={() => setPolicyOpen(true)}
                 />
               )}

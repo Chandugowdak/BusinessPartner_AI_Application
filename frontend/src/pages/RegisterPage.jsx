@@ -11,7 +11,8 @@ import "./RegisterForm.css";
  * profile fields later once the core flow is in place.
  *
  * Props:
- *  - onSwitchToLogin: () => void   fired when the user taps "Sign in"
+ *  - onSwitchToLogin: () => void   called after successful registration
+ *  - onOpenPolicy: () => void   opens the privacy and terms information
  */
 export default function RegisterForm({ onSwitchToLogin, onOpenPolicy }) {
   const [form] = Form.useForm();
@@ -164,16 +165,6 @@ export default function RegisterForm({ onSwitchToLogin, onOpenPolicy }) {
         </Button>
       </Form.Item>
 
-      <div className="register-form-footer">
-        <span className="register-form-footer-text">Already have a BizMatch account? </span>
-        <button
-          type="button"
-          onClick={() => onSwitchToLogin?.()}
-          className="register-form-footer-link"
-        >
-          Sign in →
-        </button>
-      </div>
     </Form>
   );
 }
