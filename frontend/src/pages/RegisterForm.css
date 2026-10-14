@@ -83,6 +83,10 @@
 }
 
 .register-form-inline-link {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
   color: #ff8a00;
   font-weight: 600;
   text-decoration: none;
@@ -146,6 +150,10 @@
 }
 
 .register-form-footer-link {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
   color: #ff8a00;
   font-weight: 650;
   font-size: 14px;

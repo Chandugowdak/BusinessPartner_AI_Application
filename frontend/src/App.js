@@ -1,21 +1,97 @@
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { App as AntApp } from 'antd';
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 
+import Breadcrumbs from './components/Breadcrumbs/Breadcrumbs';
+import Navbar from './components/Navbar/Navbar';
 import Authpage from './EntryComponent/Authpage.jsx';
+import ConnectionsPage from './pages/ConnectionsPage.jsx';
+import FindPartnersPage from './pages/FindPartnersPage.jsx';
+import JobsPage from './pages/JobsPage.jsx';
+import HomePage from './pages/HomePage.jsx';
+import MyRequestsPage from './pages/MyRequestsPage.jsx';
+import ProfilePage from './pages/ProfilePage.jsx';
+import VerificationModal from './components/VerificationModal/VerificationModal';
+import { useEffect, useState } from 'react';
+import Footer from './components/Footer/Footer';
+import InformationPage from './pages/InformationPage';
+import HelpPage from './pages/HelpPage';
+import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
+import ReportPage from './pages/ReportPage';
+import ContactPage from './pages/ContactPage';
+import MatchingGuidePage from './pages/MatchingGuidePage';
 
 import './App.css';
+
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  useEffect(() => { window.scrollTo({ top: 0, left: 0, behavior: 'smooth' }); }, [pathname]);
+  return null;
+}
+
+function ProtectedRoute({ children }) {
+  const [verificationOpen, setVerificationOpen] = useState(() => {
+    try {
+      const user = JSON.parse(localStorage.getItem('currentUser')) || {};
+      return (user.profileCompletion || 20) < 75 && localStorage.getItem('verificationSkipped') !== 'true';
+    } catch { return false; }
+  });
+  if (!localStorage.getItem('token')) return <Navigate to="/login" replace />;
+  const handleClose = () => { localStorage.setItem('verificationSkipped', 'true'); setVerificationOpen(false); };
+  const handleSaved = () => { localStorage.setItem('verificationSkipped', 'true'); setVerificationOpen(false); };
+  return <><VerificationModal open={verificationOpen} onClose={handleClose} onSaved={handleSaved} />{children}</>;
+}
+
+function ApplicationRoutes() {
+  const location = useLocation();
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const isAuthenticated = Boolean(localStorage.getItem('token')) && !["/login", "/register"].includes(location.pathname);
+  const shellClassName = `application-shell${isAuthenticated ? ' has-sidebar' : ''}${sidebarCollapsed ? ' sidebar-collapsed' : ''}`;
+
+  return (
+    <div className={shellClassName}>
+      <ScrollToTop />
+      <Navbar
+        isAuthenticated={isAuthenticated}
+        collapsed={sidebarCollapsed}
+        onToggleCollapsed={() => setSidebarCollapsed((collapsed) => !collapsed)}
+      />
+      <div className="application-content">
+        <Breadcrumbs />
+        <Routes>
+          <Route path="/login" element={<Authpage initialMode="login" />} />
+
+          <Route path="/register" element={<Authpage initialMode="register" />} />
+          <Route path="/about" element={<InformationPage type="about" />} />
+          <Route path="/blog" element={<InformationPage type="blog" />} />
+          <Route path="/how-matching-works" element={<MatchingGuidePage />} />
+          <Route path="/help" element={<HelpPage />} />
+          <Route path="/privacy" element={<PrivacyPolicyPage />} />
+          <Route path="/report" element={<ReportPage />} />
+          <Route path="/contact" element={<ContactPage />} />
+
+          <Route path="/home" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
+          <Route path="/find-partners" element={<ProtectedRoute><FindPartnersPage /></ProtectedRoute>} />
+          <Route path="/jobs" element={<ProtectedRoute><JobsPage /></ProtectedRoute>} />
+          <Route path="/connections" element={<ProtectedRoute><ConnectionsPage /></ProtectedRoute>} />
+          <Route path="/requests" element={<ProtectedRoute><MyRequestsPage /></ProtectedRoute>} />
+          <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+
+          <Route path="/" element={<Navigate to={localStorage.getItem('token') ? "/home" : "/login"} replace />} />
+
+          <Route path="*" element={<Navigate to="/login" replace />} />
+        </Routes>
+        <Footer />
+      </div>
+    </div>
+  );
+}
 
 function App() {
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/login" element={<Authpage initialMode="login" />} />
-
-        <Route path="/register" element={<Authpage initialMode="register" />} />
-
-        <Route path="/" element={<Navigate to="/login" replace />} />
-
-        <Route path="*" element={<Navigate to="/login" replace />} />
-      </Routes>
+      <AntApp>
+        <ApplicationRoutes />
+      </AntApp>
     </BrowserRouter>
   );
 }

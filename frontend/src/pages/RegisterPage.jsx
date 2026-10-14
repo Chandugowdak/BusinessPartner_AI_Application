@@ -1,6 +1,7 @@
-import { Button, Checkbox, Form, Input, message } from "antd";
+import { useState } from "react";
+import { App as AntApp, Button, Checkbox, Form, Input } from "antd";
 import { ArrowRightOutlined, UserOutlined, MailOutlined, LockOutlined } from "@ant-design/icons";
-import { Link } from "react-router-dom";
+import { registerUser } from "../DataProvider/AuthDataProvider";
 import "./RegisterForm.css";
 
 /**
@@ -10,15 +11,38 @@ import "./RegisterForm.css";
  * profile fields later once the core flow is in place.
  *
  * Props:
- *  - onSwitchToLogin: () => void   fired when the user taps "Sign in"
+ *  - onSwitchToLogin: () => void   called after successful registration
+ *  - onOpenPolicy: () => void   opens the privacy and terms information
  */
-export default function RegisterForm({ onSwitchToLogin }) {
+export default function RegisterForm({ onSwitchToLogin, onOpenPolicy }) {
   const [form] = Form.useForm();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { notification } = AntApp.useApp();
 
-  const onFinish = (values) => {
-    console.log("Register submit:", values);
-    message.success("Account created successfully!");
-    form.resetFields(["password", "confirm", "agreement"]);
+  const onFinish = async (values) => {
+    try {
+      setIsSubmitting(true);
+      const response = await registerUser({
+        name: values.name,
+        email: values.email,
+        password: values.password,
+        confirmPassword: values.confirm,
+      });
+
+      notification.success({
+        message: "Registration successful",
+        description: response?.message || "Your account has been created.",
+      });
+      form.resetFields(["name", "email", "password", "confirm", "agreement"]);
+      onSwitchToLogin?.();
+    } catch (error) {
+      notification.error({
+        message: "Registration failed",
+        description: error?.response?.data?.message || "Please check your details and try again.",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -115,13 +139,13 @@ export default function RegisterForm({ onSwitchToLogin }) {
       >
         <Checkbox className="register-form-agreement">
           I agree to the{" "}
-          <Link to="/terms" className="register-form-inline-link">
+          <button type="button" onClick={onOpenPolicy} className="register-form-inline-link">
             Terms & Conditions
-          </Link>{" "}
+          </button>{" "}
           and{" "}
-          <Link to="/privacy" className="register-form-inline-link">
+          <button type="button" onClick={onOpenPolicy} className="register-form-inline-link">
             Privacy Policy
-          </Link>
+          </button>
         </Checkbox>
       </Form.Item>
 
@@ -131,6 +155,8 @@ export default function RegisterForm({ onSwitchToLogin }) {
           htmlType="submit"
           size="large"
           block
+          loading={isSubmitting}
+          disabled={isSubmitting}
           icon={<ArrowRightOutlined />}
           iconPosition="end"
           className="register-form-submit"
@@ -139,16 +165,6 @@ export default function RegisterForm({ onSwitchToLogin }) {
         </Button>
       </Form.Item>
 
-      <div className="register-form-footer">
-        <span className="register-form-footer-text">Already have a BizMatch account? </span>
-        <Link
-          to="/login"
-          onClick={() => onSwitchToLogin?.()}
-          className="register-form-footer-link"
-        >
-          Sign in →
-        </Link>
-      </div>
     </Form>
   );
 }

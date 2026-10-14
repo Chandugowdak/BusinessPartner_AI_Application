@@ -1,6 +1,7 @@
-import { Button, Checkbox, Form, Input, message } from "antd";
+import { useState } from "react";
+import { App as AntApp, Button, Checkbox, Form, Input } from "antd";
 import { ArrowRightOutlined, LockOutlined, MailOutlined } from "@ant-design/icons";
-import { Link } from "react-router-dom";
+import { loginUser } from "../DataProvider/AuthDataProvider";
 import "./LoginForm.css";
 
 /**
@@ -9,15 +10,43 @@ import "./LoginForm.css";
  * Meant to be rendered inside <AuthPage /> alongside <RegisterForm />.
  *
  * Props:
- *  - onSwitchToRegister: () => void   fired when the user taps "Create account"
+ *  - onLoginSuccess: () => void   fired after a successful login
  */
-export default function LoginForm({ onSwitchToRegister }) {
+export default function LoginForm({ onLoginSuccess, onOpenPolicy }) {
   const [form] = Form.useForm();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { notification } = AntApp.useApp();
 
-  const onFinish = (values) => {
-    console.log("Login submit:", values);
-    message.success("Welcome back!");
-    form.resetFields(["password"]);
+  const onFinish = async (values) => {
+    try {
+      setIsSubmitting(true);
+      const response = await loginUser({
+        email: values.email,
+        password: values.password,
+      });
+
+      if (response?.token) {
+        localStorage.setItem("token", response.token);
+      }
+      if (response?.user) {
+        localStorage.setItem("currentUser", JSON.stringify(response.user));
+      }
+      localStorage.removeItem("verificationSkipped");
+
+      notification.success({
+        message: "Login successful",
+        description: response?.message || "Welcome back!",
+      });
+      form.resetFields(["password"]);
+      onLoginSuccess?.();
+    } catch (error) {
+      notification.error({
+        message: "Login failed",
+        description: error?.response?.data?.message || "Please check your details and try again.",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -65,9 +94,9 @@ export default function LoginForm({ onSwitchToRegister }) {
           <Checkbox className="login-form-remember">Remember me</Checkbox>
         </Form.Item>
 
-        <Link to="/forgot-password" className="login-form-forgot">
+        <button type="button" className="login-form-forgot" onClick={onOpenPolicy}>
           Forgot password?
-        </Link>
+        </button>
       </div>
 
       <Form.Item className="login-form-submit-item">
@@ -76,6 +105,8 @@ export default function LoginForm({ onSwitchToRegister }) {
           htmlType="submit"
           size="large"
           block
+          loading={isSubmitting}
+          disabled={isSubmitting}
           icon={<ArrowRightOutlined />}
           iconPosition="end"
           className="login-form-submit"
@@ -84,16 +115,10 @@ export default function LoginForm({ onSwitchToRegister }) {
         </Button>
       </Form.Item>
 
-      <div className="login-form-footer">
-        <span className="login-form-footer-text">New to BizMatch? </span>
-        <Link
-          to="/register"
-          onClick={() => onSwitchToRegister?.()}
-          className="login-form-footer-link"
-        >
-          Create your free account →
-        </Link>
-      </div>
+      <p className="login-form-policy-note">
+        By signing in, you agree to our{" "}
+        <button type="button" onClick={onOpenPolicy}>Privacy Policy</button>.
+      </p>
     </Form>
   );
 }
