@@ -1,24 +1,9 @@
 const User = require('../../model/User/UserSchema.js');
 const { getPublicUser, hashGovernmentId, normalizePhone, normalizeUrl, isValidPhone, PUBLIC_USER_FIELDS } = require('./UserController');
-const multer = require('multer');
-const fs = require('fs');
-const path = require('path');
-
-const uploadDirectory = path.join(__dirname, '../../uploads');
-fs.mkdirSync(uploadDirectory, { recursive: true });
-const photoUpload = multer({
-    storage: multer.diskStorage({
-        destination: uploadDirectory,
-        filename: (_req, file, callback) => callback(null, `${Date.now()}-${file.originalname.replace(/[^a-zA-Z0-9._-]/g, '_')}`),
-    }),
-    limits: { fileSize: 5 * 1024 * 1024 },
-    fileFilter: (_req, file, callback) => callback(null, file.mimetype.startsWith('image/')),
-});
-
 
 const HandleUserUpdate = async(req,res)=>{
     const { userId } = req.params;
-    const { name, email, phone, linkedInUrl, xUrl, professionalField, role, governmentIdType, governmentId } = req.body;
+    const { name, email, phone, linkedInUrl, xUrl, professionalField, role, governmentIdType, governmentId, photoUrl } = req.body;
     try{
          if (String(req.user.userId) !== String(userId)) {
           return res.status(403).json({ message: 'You can only update your own profile' });
@@ -42,6 +27,24 @@ const HandleUserUpdate = async(req,res)=>{
         professionalField: professionalField?.trim(),
         role: role?.trim(),
     };
+
+    if (photoUrl !== undefined) {
+        if (typeof photoUrl !== 'string') {
+            return res.status(400).json({ message: 'Enter a valid HTTP or HTTPS photo URL.' });
+        }
+        const normalizedPhotoUrl = photoUrl.trim();
+        if (normalizedPhotoUrl) {
+            try {
+                const parsedPhotoUrl = new URL(normalizedPhotoUrl);
+                if (!['http:', 'https:'].includes(parsedPhotoUrl.protocol) || !parsedPhotoUrl.hostname || normalizedPhotoUrl.length > 2048) {
+                    return res.status(400).json({ message: 'Enter a valid HTTP or HTTPS photo URL up to 2048 characters.' });
+                }
+            } catch {
+                return res.status(400).json({ message: 'Enter a valid HTTP or HTTPS photo URL up to 2048 characters.' });
+            }
+        }
+        updates.photoUrl = normalizedPhotoUrl;
+    }
 
     if (!isValidPhone(updates.phone)) {
         return res.status(400).json({ message: 'Enter a valid phone number with 10 to 15 digits.' });
@@ -112,16 +115,4 @@ const ListUsers = async (req, res) => {
     }
 };
 
-const UploadProfilePhoto = [photoUpload.single('photo'), async (req, res) => {
-    try {
-        if (req.user.userId !== req.params.userId) return res.status(403).json({ message: 'You can only update your own profile' });
-        if (!req.file) return res.status(400).json({ message: 'Choose an image up to 5 MB.' });
-        const user = await User.findByIdAndUpdate(req.params.userId, { photoUrl: `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}` }, { new: true }).select(PUBLIC_USER_FIELDS);
-        if (!user) return res.status(404).json({ message: 'User not found' });
-        res.status(200).json({ message: 'Profile photo updated.', user: getPublicUser(user) });
-    } catch (err) {
-        res.status(400).json({ message: 'Could not upload profile photo', error: err.message });
-    }
-}];
-
-module.exports = { HandleUserUpdate, ListUsers, UploadProfilePhoto };
+module.exports = { HandleUserUpdate, ListUsers };

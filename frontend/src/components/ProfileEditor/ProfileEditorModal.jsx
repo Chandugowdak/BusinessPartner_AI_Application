@@ -1,7 +1,7 @@
-import { CameraOutlined, GlobalOutlined, IdcardOutlined, LinkOutlined, MailOutlined, PhoneOutlined, SafetyCertificateOutlined, UserOutlined } from "@ant-design/icons";
-import { App as AntApp, Button, Col, Form, Input, Modal, Progress, Row, Select, Upload } from "antd";
+import { GlobalOutlined, IdcardOutlined, LinkOutlined, MailOutlined, PhoneOutlined, SafetyCertificateOutlined, UserOutlined } from "@ant-design/icons";
+import { App as AntApp, Button, Col, Form, Input, Modal, Progress, Row, Select } from "antd";
 import { useEffect, useState } from "react";
-import { updateUser, uploadProfilePhoto } from "../../DataProvider/AuthDataProvider";
+import { updateUser } from "../../DataProvider/AuthDataProvider";
 import "./ProfileEditorModal.css";
 
 const roleOptions = ["Founder", "Investor", "Mentor", "Professional", "Freelancer", "Student", "Other"].map((role) => ({ value: role, label: role }));
@@ -11,11 +11,10 @@ const getErrorMessage = (error) => error?.response?.data?.message || error?.resp
 export default function ProfileEditorModal({ open, onClose, onSaved, profile, completion = 20, isVerification = false }) {
   const [form] = Form.useForm();
   const [isSaving, setIsSaving] = useState(false);
-  const [photoFile, setPhotoFile] = useState(null);
   const { notification } = AntApp.useApp();
 
   useEffect(() => {
-    if (open) { form.setFieldsValue(profile); setPhotoFile(null); }
+    if (open) form.setFieldsValue(profile);
   }, [open, profile, form]);
 
   const saveProfile = async (values) => {
@@ -23,10 +22,9 @@ export default function ProfileEditorModal({ open, onClose, onSaved, profile, co
     try {
       setIsSaving(true);
       const response = await updateUser(profile._id, values);
-      let updatedUser = response?.user || { ...profile, ...values };
-      if (photoFile) { const photoResponse = await uploadProfilePhoto(profile._id, photoFile); updatedUser = photoResponse?.user || updatedUser; }
+      const updatedUser = response?.user || { ...profile, ...values };
       localStorage.setItem("currentUser", JSON.stringify(updatedUser));
-      setPhotoFile(null); onSaved?.(updatedUser);
+      onSaved?.(updatedUser);
       notification.success({ message: isVerification ? "Profile completed" : "Profile updated", description: response?.message || "Your changes have been saved." });
       onClose?.();
     } catch (error) { notification.error({ message: "Could not save profile", description: getErrorMessage(error) }); }
@@ -49,7 +47,7 @@ export default function ProfileEditorModal({ open, onClose, onSaved, profile, co
         <Col xs={24} sm={12}><Form.Item label="LinkedIn profile URL" name="linkedInUrl" rules={[{ type: "url", message: "Enter a valid URL." }]}><Input prefix={<LinkOutlined />} placeholder="https://linkedin.com/in/your-name" /></Form.Item></Col>
         <Col xs={24} sm={12}><Form.Item label="X profile URL" name="xUrl" rules={[{ type: "url", message: "Enter a valid URL." }]}><Input prefix={<LinkOutlined />} placeholder="https://x.com/your-handle" /></Form.Item></Col>
       </Row></div>
-      <div className="profile-editor-photo"><div><span className="profile-editor-section-label">Profile photo</span><p>Use a clear image up to 5 MB.</p></div><Upload accept="image/*" maxCount={1} beforeUpload={(file) => { if (!file.type.startsWith("image/")) { notification.error({ message: "Invalid photo", description: "Choose a JPG, PNG, or WEBP image." }); return Upload.LIST_IGNORE; } if (file.size > 5 * 1024 * 1024) { notification.error({ message: "Photo is too large", description: "Choose an image smaller than 5 MB." }); return Upload.LIST_IGNORE; } setPhotoFile(file); return false; }} onRemove={() => setPhotoFile(null)} showUploadList={photoFile ? { showPreviewIcon: false } : false}><Button icon={<CameraOutlined />}>Choose photo</Button></Upload></div>
+      <div className="profile-editor-photo"><div><span className="profile-editor-section-label">Profile photo</span><p>Paste a direct image URL. The URL is saved to your profile; no image file is uploaded to this app.</p></div><Form.Item label="Photo URL" name="photoUrl" rules={[{ max: 2048, message: "The photo URL must be 2048 characters or fewer." }, { validator: (_, value) => { if (!value) return Promise.resolve(); try { const parsedUrl = new URL(value); return ["http:", "https:"].includes(parsedUrl.protocol) && parsedUrl.hostname ? Promise.resolve() : Promise.reject(new Error("Enter a valid HTTP or HTTPS image URL.")); } catch { return Promise.reject(new Error("Enter a valid HTTP or HTTPS image URL.")); } } }]}><Input prefix={<LinkOutlined />} placeholder="https://example.com/your-photo.jpg" /></Form.Item></div>
       <div className="profile-editor-actions"><Button onClick={onClose}>{isVerification ? "Skip for now" : "Cancel"}</Button><Button type="primary" htmlType="submit" loading={isSaving}>{isVerification ? "Save and continue" : "Save changes"}</Button></div>
     </Form>
   </Modal>;
