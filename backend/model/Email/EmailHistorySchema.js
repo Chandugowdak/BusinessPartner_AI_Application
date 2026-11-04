@@ -11,6 +11,7 @@ const EmailHistorySchema = new mongoose.Schema({
     successMessage: { type: String, maxlength: 250 },
     failureReason: { type: String, maxlength: 2000 },
     providerMessageId: { type: String, maxlength: 500 },
+    previewUrl: { type: String, maxlength: 2048 },
 }, { timestamps: true });
 
 EmailHistorySchema.index({ owner: 1, createdAt: -1 });

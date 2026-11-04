@@ -176,29 +176,63 @@ const sendTemplate = async (req, res) => {
             status: 'pending',
         });
 
+        let info;
+        let deliveryError;
         try {
-            const info = await createTransporter(settings).sendMail({
+            info = await createTransporter(settings).sendMail({
                 from: settings.from,
                 to: history.recipient,
                 subject,
                 text: content,
                 html: escapeHtml(content).replace(/\r?\n/g, '<br>'),
             });
-            history.status = 'sent';
-            history.successMessage = 'Email sent successfully.';
-            history.providerMessageId = info.messageId;
-            await history.save();
-            return res.status(200).json({ message: 'Email sent.', historyId: history._id });
         } catch (error) {
-            history.status = 'failed';
-            const failureReason = typeof error?.message === 'string'
-                ? error.message
-                : 'The email provider rejected the delivery.';
-            history.failureReason = failureReason.slice(0, 2000);
-            await history.save();
-            console.error(`Email delivery failed for history ${history._id}:`, error);
-            return res.status(502).json({ message: 'Email could not be delivered. Check the email history for details.' });
+            deliveryError = error;
         }
+
+        const recipientAccepted = !deliveryError
+            && Array.isArray(info?.accepted)
+            && info.accepted.some((accepted) => String(accepted).trim().toLowerCase() === history.recipient);
+        const isEthereal = /(^|\.)ethereal\.email$/i.test(settings.host);
+        const deliveredByConfiguredTransport = recipientAccepted && !isEthereal;
+
+        if (!deliveredByConfiguredTransport) {
+            history.status = 'failed';
+            const failureReason = isEthereal && recipientAccepted
+                ? 'Ethereal is a test email service. It captured this message for preview but does not deliver it to the recipient.'
+                : typeof deliveryError?.message === 'string'
+                    ? deliveryError.message
+                    : 'The mail server did not accept the recipient.';
+            history.failureReason = failureReason.slice(0, 2000);
+            if (info?.messageId) history.providerMessageId = info.messageId;
+            if (isEthereal && recipientAccepted) {
+                history.previewUrl = nodemailer.getTestMessageUrl(info) || undefined;
+            }
+        } else {
+            history.status = 'sent';
+            history.successMessage = 'Email accepted by the mail server. Inbox delivery is not confirmed.';
+            history.providerMessageId = info.messageId;
+        }
+
+        try {
+            await history.save();
+        } catch (error) {
+            console.error(`Email result could not be recorded for history ${history._id}:`, error);
+            const message = deliveredByConfiguredTransport
+                ? 'Email was accepted by the mail server, but its result could not be recorded. Check history before retrying.'
+                : 'Email was not accepted by the mail server, but its result could not be recorded in history.';
+            return res.status(500).json({ message, historyId: history._id });
+        }
+
+        if (!deliveredByConfiguredTransport) {
+            if (deliveryError) console.error(`Email delivery failed for history ${history._id}:`, deliveryError);
+            const message = isEthereal && recipientAccepted
+                ? 'Ethereal captured this test email, but did not deliver it to the recipient. See the email history for its preview.'
+                : 'Email could not be delivered. Check the email history for details.';
+            return res.status(502).json({ message, historyId: history._id });
+        }
+
+        return res.status(200).json({ message: 'Email accepted by the mail server. Inbox delivery is not confirmed.', historyId: history._id });
     } catch (error) {
         console.error('Email send request failed:', error);
         return res.status(500).json({ message: 'Email could not be sent.' });

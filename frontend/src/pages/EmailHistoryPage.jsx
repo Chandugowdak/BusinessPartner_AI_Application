@@ -5,6 +5,7 @@ import { getEmailHistory } from '../DataProvider/EmailDataProvider';
 import './EmailPages.css';
 
 const statusColor = { sent: 'success', pending: 'processing', failed: 'error' };
+const statusLabel = { sent: 'Accepted', pending: 'Pending', failed: 'Failed' };
 
 export default function EmailHistoryPage() {
   const { message } = App.useApp();
@@ -33,7 +34,7 @@ export default function EmailHistoryPage() {
     { title: 'Recipient', dataIndex: 'recipient', key: 'recipient', ellipsis: true },
     { title: 'Subject', dataIndex: 'subject', key: 'subject', ellipsis: true },
     { title: 'Template', dataIndex: 'templateName', key: 'templateName', ellipsis: true },
-    { title: 'Status', dataIndex: 'status', key: 'status', width: 110, render: (value) => <Tag color={statusColor[value]}>{value}</Tag> },
+    { title: 'Status', dataIndex: 'status', key: 'status', width: 110, render: (value) => <Tag color={statusColor[value]}>{statusLabel[value] || value}</Tag> },
     {
       title: 'Details',
       key: 'details',
@@ -51,7 +52,7 @@ export default function EmailHistoryPage() {
       <header className="email-page-header">
         <span className="email-eyebrow">EMAIL WORKSPACE</span>
         <h1>Email history</h1>
-        <p>Review delivery attempts sent from your account. History is private to your account.</p>
+        <p>Review attempts and whether your mail server accepted them. Inbox delivery is not confirmed. History is private to your account.</p>
       </header>
       <section className="email-history-panel">
         <div className="email-section-heading"><div><span className="email-section-kicker">DELIVERY RECORDS</span><h2>Recent activity</h2></div><span className="email-history-count">{pagination.total} total</span></div>
@@ -76,7 +77,7 @@ export default function EmailHistoryPage() {
         {selectedEntry && (
           <Descriptions column={1} bordered size="small">
             <Descriptions.Item label="Status">
-              <Tag color={statusColor[selectedEntry.status]}>{selectedEntry.status}</Tag>
+              <Tag color={statusColor[selectedEntry.status]}>{statusLabel[selectedEntry.status] || selectedEntry.status}</Tag>
             </Descriptions.Item>
             <Descriptions.Item label="Sender">{selectedEntry.sender || 'Not recorded'}</Descriptions.Item>
             <Descriptions.Item label="Recipient">{selectedEntry.recipient}</Descriptions.Item>
@@ -88,6 +89,11 @@ export default function EmailHistoryPage() {
                   ? selectedEntry.successMessage || 'Email sent successfully.'
                   : 'Delivery is still processing.'}
             </Descriptions.Item>
+            {selectedEntry.previewUrl && (
+              <Descriptions.Item label="Test email preview">
+                <a href={selectedEntry.previewUrl} target="_blank" rel="noreferrer">Open Ethereal preview</a>
+              </Descriptions.Item>
+            )}
             <Descriptions.Item label="Date">{new Date(selectedEntry.createdAt).toLocaleString()}</Descriptions.Item>
           </Descriptions>
         )}

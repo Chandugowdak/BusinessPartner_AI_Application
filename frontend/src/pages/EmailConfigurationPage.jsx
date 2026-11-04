@@ -107,10 +107,10 @@ export default function EmailConfigurationPage() {
     if (!selectedTemplate) return;
     setSending(true);
     try {
-      await sendTemplateEmail({ templateId: selectedId, to: recipient, variables });
+      const response = await sendTemplateEmail({ templateId: selectedId, to: recipient, variables });
       setRecipient('');
       setVariables({});
-      message.success('Email sent. See Email history for delivery status.');
+      message.success(response.message || 'Email accepted by the mail server. Check email history for status.');
     } catch (error) {
       message.error(error.response?.data?.message || 'Email could not be sent.');
     } finally {
