@@ -128,11 +128,17 @@ export default function EmailConfigurationPage() {
       {mailStatus && (
         <Alert
           className="email-config-alert"
-          type={mailStatus.configured ? 'success' : 'warning'}
+          type={mailStatus.configured && !mailStatus.testService ? 'success' : 'warning'}
           showIcon
-          message={mailStatus.configured ? 'Email delivery is configured' : 'Email delivery needs server configuration'}
+          message={!mailStatus.configured
+            ? 'Email delivery needs server configuration'
+            : mailStatus.testService
+              ? 'Ethereal test mode: messages are not delivered'
+              : 'Email delivery is configured'}
           description={mailStatus.configured
-            ? 'The server has the required SMTP settings.'
+            ? mailStatus.testService
+              ? 'Ethereal only captures messages for preview. To deliver email, configure Gmail SMTP with smtp.gmail.com, your full Gmail address, and a Google App Password (not your regular account password).'
+              : 'The server has the required SMTP settings.'
             : `Add the missing settings to the backend environment: ${mailStatus.missingFields.join(', ')}.`}
           action={mailStatus.configured && <Button icon={<CheckCircleOutlined />} loading={testing} onClick={testConnection}>Test connection</Button>}
         />

@@ -9,6 +9,7 @@ const MAX_SUBJECT_LENGTH = 200;
 const MAX_BODY_LENGTH = 10000;
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const TEMPLATE_VARIABLE_PATTERN = /{{\s*([a-zA-Z][a-zA-Z0-9_]*)\s*}}/g;
+const isEtherealHost = (host) => /(^|\.)ethereal\.email$/i.test(host || '');
 
 const getMailSettings = () => {
     const required = ['MAIL_HOST', 'MAIL_PORT', 'MAIL_USER', 'MAIL_PASS', 'MAIL_FROM'];
@@ -22,8 +23,11 @@ const getMailSettings = () => {
         port,
         secure: process.env.MAIL_SECURE === 'true',
         user: process.env.MAIL_USER,
-        pass: process.env.MAIL_PASS,
+        pass: process.env.MAIL_HOST?.trim().toLowerCase() === 'smtp.gmail.com'
+            ? process.env.MAIL_PASS?.replace(/\s/g, '')
+            : process.env.MAIL_PASS,
         from: process.env.MAIL_FROM,
+        testService: isEtherealHost(process.env.MAIL_HOST),
     };
 };
 
@@ -52,7 +56,11 @@ const listConfiguration = async (req, res) => {
         ]);
         res.json({
             templates,
-            mail: { configured: settings.missingFields.length === 0, missingFields: settings.missingFields },
+            mail: {
+                configured: settings.missingFields.length === 0,
+                missingFields: settings.missingFields,
+                testService: settings.testService,
+            },
         });
     } catch (error) {
         console.error('Email configuration could not be loaded:', error);
@@ -193,7 +201,7 @@ const sendTemplate = async (req, res) => {
         const recipientAccepted = !deliveryError
             && Array.isArray(info?.accepted)
             && info.accepted.some((accepted) => String(accepted).trim().toLowerCase() === history.recipient);
-        const isEthereal = /(^|\.)ethereal\.email$/i.test(settings.host);
+        const isEthereal = settings.testService;
         const deliveredByConfiguredTransport = recipientAccepted && !isEthereal;
 
         if (!deliveredByConfiguredTransport) {
