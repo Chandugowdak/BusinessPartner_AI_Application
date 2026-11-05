@@ -25,6 +25,7 @@ const connectionRoute = require('./router/ConnectionRouter');
 const notificationRoute = require('./router/NotificationRouter');
 const reportRoute = require('./router/ReportRouter');
 const contactRoute = require('./router/ContactRouter');
+const emailRoute = require('./router/EmailRoute');
 
 
 
@@ -39,6 +40,8 @@ app.use('/api/connections', connectionRoute);
 app.use('/api/notifications', notificationRoute);
 app.use('/api/reports', reportRoute);
 app.use('/api/contacts', contactRoute);
+app.use('/api/email', emailRoute);
+
 
 io.use((socket, next) => {
     const token = socket.handshake.auth?.token;

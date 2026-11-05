@@ -19,6 +19,8 @@ import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
 import ReportPage from './pages/ReportPage';
 import ContactPage from './pages/ContactPage';
 import MatchingGuidePage from './pages/MatchingGuidePage';
+import EmailConfigurationPage from './pages/EmailConfigurationPage';
+import EmailHistoryPage from './pages/EmailHistoryPage';
 
 import './App.css';
 
@@ -75,6 +77,8 @@ function ApplicationRoutes() {
           <Route path="/connections" element={<ProtectedRoute><ConnectionsPage /></ProtectedRoute>} />
           <Route path="/requests" element={<ProtectedRoute><MyRequestsPage /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+          <Route path="/email/configuration" element={<ProtectedRoute><EmailConfigurationPage /></ProtectedRoute>} />
+          <Route path="/email/history" element={<ProtectedRoute><EmailHistoryPage /></ProtectedRoute>} />
 
           <Route path="/" element={<Navigate to={localStorage.getItem('token') ? "/home" : "/login"} replace />} />
 
