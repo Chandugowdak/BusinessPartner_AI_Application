@@ -1,6 +1,6 @@
 import { Badge, Button, Dropdown, Spin } from "antd";
-import { BellOutlined, CheckCircleFilled, CloseOutlined, CompassOutlined, HomeOutlined, InfoCircleOutlined, LogoutOutlined, MenuFoldOutlined, MenuUnfoldOutlined, QuestionCircleOutlined, ReadOutlined, SearchOutlined, SolutionOutlined, TeamOutlined, UserAddOutlined, UserOutlined } from "@ant-design/icons";
-import { useNavigate } from "react-router-dom";
+import { BellOutlined, CheckCircleFilled, CloseOutlined, CompassOutlined, DownOutlined, HistoryOutlined, HomeOutlined, InfoCircleOutlined, LogoutOutlined, MailOutlined, MenuFoldOutlined, MenuUnfoldOutlined, QuestionCircleOutlined, ReadOutlined, SearchOutlined, SettingOutlined, SolutionOutlined, TeamOutlined, UserAddOutlined, UserOutlined } from "@ant-design/icons";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { deleteAllNotifications, deleteNotification, getNotifications, markNotificationsRead } from "../../DataProvider/AuthDataProvider";
 import BrandLogo from "./BrandLogo";
@@ -29,6 +29,8 @@ const getInitials = (name = "") => name.split(" ").filter(Boolean).slice(0, 2).m
 
 export default function Navbar({ isAuthenticated, collapsed, onToggleCollapsed }) {
   const navigate = useNavigate();
+  const { pathname } = useLocation();
+  const [emailNavigationOpen, setEmailNavigationOpen] = useState(pathname.startsWith("/email"));
   const [unreadCount, setUnreadCount] = useState(0);
   const [notifications, setNotifications] = useState([]);
   const [isNotificationLoading, setIsNotificationLoading] = useState(false);
@@ -69,6 +71,15 @@ export default function Navbar({ isAuthenticated, collapsed, onToggleCollapsed }
       <BrandLogo />
       <nav className="workspace-links" aria-label="Main navigation">
         {navigationItems.map((item) => <NavigationLink key={item.label} {...item} collapsed={collapsed} />)}
+          <div className={`workspace-nav-group${emailNavigationOpen ? " expanded" : ""}`}>
+            <button type="button" className={`workspace-link workspace-group-toggle${pathname.startsWith("/email") ? " active" : ""}`} onClick={() => setEmailNavigationOpen((open) => !open)} aria-expanded={emailNavigationOpen}>
+              <MailOutlined /><span>Email</span><DownOutlined className="workspace-group-chevron" />
+            </button>
+            {emailNavigationOpen && <div className="workspace-sub-links">
+              <NavigationLink to="/email/configuration" label="Configure email" icon={SettingOutlined} collapsed={collapsed} />
+              <NavigationLink to="/email/history" label="History" icon={HistoryOutlined} collapsed={collapsed} />
+            </div>}
+          </div>
       </nav>
     </aside>}
   </>;
