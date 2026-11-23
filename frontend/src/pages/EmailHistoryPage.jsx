@@ -34,6 +34,7 @@ export default function EmailHistoryPage() {
     { title: 'Recipient', dataIndex: 'recipient', key: 'recipient', ellipsis: true },
     { title: 'Subject', dataIndex: 'subject', key: 'subject', ellipsis: true },
     { title: 'Template', dataIndex: 'templateName', key: 'templateName', ellipsis: true },
+    { title: 'Source', dataIndex: 'origin', key: 'origin', width: 130, render: (value, entry) => value === 'scheduled' ? <Tag color="blue">{entry.scheduleName || 'Scheduled'}</Tag> : <Tag>Manual</Tag> },
     { title: 'Status', dataIndex: 'status', key: 'status', width: 110, render: (value) => <Tag color={statusColor[value]}>{statusLabel[value] || value}</Tag> },
     {
       title: 'Details',
@@ -82,6 +83,7 @@ export default function EmailHistoryPage() {
             <Descriptions.Item label="Sender">{selectedEntry.sender || 'Not recorded'}</Descriptions.Item>
             <Descriptions.Item label="Recipient">{selectedEntry.recipient}</Descriptions.Item>
             <Descriptions.Item label="Subject">{selectedEntry.subject}</Descriptions.Item>
+            <Descriptions.Item label="Source">{selectedEntry.origin === 'scheduled' ? `Scheduled · ${selectedEntry.scheduleName || 'Email schedule'}` : 'Manual'}</Descriptions.Item>
             <Descriptions.Item label={selectedEntry.status === 'failed' ? 'Failure reason' : 'Message'}>
               {selectedEntry.status === 'failed'
                 ? selectedEntry.failureReason || 'Failure details were not recorded for this email.'

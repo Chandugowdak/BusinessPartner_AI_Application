@@ -34,3 +34,23 @@ export const getEmailHistory = async (page = 1, limit = 20) => {
   const response = await apiClient.get('/email/history', { params: { page, limit } });
   return response.data;
 };
+
+export const getEmailSchedules = async () => {
+  const response = await apiClient.get('/email/schedules');
+  return response.data;
+};
+
+export const createEmailSchedule = async (payload) => {
+  const response = await apiClient.post('/email/schedules', payload);
+  return response.data;
+};
+
+export const updateEmailSchedule = async (scheduleId, payload) => {
+  const response = await apiClient.put(`/email/schedules/${scheduleId}`, payload);
+  return response.data;
+};
+
+export const deleteEmailSchedule = async (scheduleId) => {
+  const response = await apiClient.delete(`/email/schedules/${scheduleId}`);
+  return response.data;
+};

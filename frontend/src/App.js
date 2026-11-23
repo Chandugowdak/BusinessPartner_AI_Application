@@ -21,6 +21,7 @@ import ContactPage from './pages/ContactPage';
 import MatchingGuidePage from './pages/MatchingGuidePage';
 import EmailConfigurationPage from './pages/EmailConfigurationPage';
 import EmailHistoryPage from './pages/EmailHistoryPage';
+import EmailSchedulerPage from './pages/EmailSchedulerPage';
 
 import './App.css';
 
@@ -78,6 +79,7 @@ function ApplicationRoutes() {
           <Route path="/requests" element={<ProtectedRoute><MyRequestsPage /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
           <Route path="/email/configuration" element={<ProtectedRoute><EmailConfigurationPage /></ProtectedRoute>} />
+          <Route path="/email/scheduler" element={<ProtectedRoute><EmailSchedulerPage /></ProtectedRoute>} />
           <Route path="/email/history" element={<ProtectedRoute><EmailHistoryPage /></ProtectedRoute>} />
 
           <Route path="/" element={<Navigate to={localStorage.getItem('token') ? "/home" : "/login"} replace />} />

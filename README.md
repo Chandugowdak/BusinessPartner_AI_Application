@@ -119,6 +119,8 @@ npm run dev
 
 Ensure that your `package.json` contains the appropriate development script.
 
+Email automation schedules are stored in the database and run daily using the selected time zone. Configure the `MAIL_*` SMTP values shown in `backend/.env.example`; the backend and database must remain available for scheduled delivery. Each scheduled attempt is recorded with manual sends in Email History.
+
 ### 3. Set Up the Frontend
 
 Open a new terminal:

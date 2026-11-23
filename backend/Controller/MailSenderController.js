@@ -141,21 +141,133 @@ const renderTemplate = (value, variables, isHtml = false) => value.replace(TEMPL
     return isHtml ? escapeHtml(replacement) : replacement.replace(/[\r\n]/g, ' ');
 });
 
-const sendTemplate = async (req, res) => {
-    const { templateId, to, variables = {} } = req.body || {};
-    if (typeof to !== 'string' || to.length > 254 || !EMAIL_PATTERN.test(to.trim())) {
-        return res.status(400).json({ message: 'Enter a valid recipient email address.' });
+const sendTemplateForUser = async ({ owner, templateId, to, variables, origin = 'manual', schedule }) => {
+    const settings = getMailSettings();
+    if (settings.missingFields.length) {
+        const error = new Error('Email delivery is not configured on the server.');
+        error.status = 503;
+        error.missingFields = settings.missingFields;
+        throw error;
     }
-    if (!mongoose.isValidObjectId(templateId)) return res.status(400).json({ message: 'Choose a valid email template.' });
+
+    const template = await EmailTemplate.findOne({ _id: templateId, owner });
+    if (!template) {
+        const error = new Error('Template not found.');
+        error.status = 404;
+        throw error;
+    }
+
+    const since = new Date(Date.now() - 60 * 60 * 1000);
+    const recentSends = await EmailHistory.countDocuments({ owner, createdAt: { $gte: since } });
+    if (recentSends >= HOURLY_SEND_LIMIT) {
+        const error = new Error('Email sending limit reached. Try again later.');
+        error.status = 429;
+        throw error;
+    }
+
+    const subject = renderTemplate(template.subject, variables).slice(0, MAX_SUBJECT_LENGTH);
+    const content = renderTemplate(template.content, variables);
+    const history = await EmailHistory.create({
+        owner,
+        template: template._id,
+        templateName: template.name,
+        origin,
+        scheduleId: schedule?._id || null,
+        scheduleName: schedule?.name || null,
+        sender: settings.from,
+        recipient: to.trim().toLowerCase(),
+        subject,
+        status: 'pending',
+    });
+
+    let info;
+    let deliveryError;
+    try {
+        info = await createTransporter(settings).sendMail({
+            from: settings.from,
+            to: history.recipient,
+            subject,
+            text: content,
+            html: escapeHtml(content).replace(/\r?\n/g, '<br>'),
+        });
+    } catch (error) {
+        deliveryError = error;
+    }
+
+    const recipientAccepted = !deliveryError
+        && Array.isArray(info?.accepted)
+        && info.accepted.some((accepted) => String(accepted).trim().toLowerCase() === history.recipient);
+    const isEthereal = settings.testService;
+    const deliveredByConfiguredTransport = recipientAccepted && !isEthereal;
+
+    if (!deliveredByConfiguredTransport) {
+        history.status = 'failed';
+        const failureReason = isEthereal && recipientAccepted
+            ? 'Ethereal is a test email service. It captured this message for preview but does not deliver it to the recipient.'
+            : typeof deliveryError?.message === 'string'
+                ? deliveryError.message
+                : 'The mail server did not accept the recipient.';
+        history.failureReason = failureReason.slice(0, 2000);
+        if (info?.messageId) history.providerMessageId = info.messageId;
+        if (isEthereal && recipientAccepted) {
+            history.previewUrl = nodemailer.getTestMessageUrl(info) || undefined;
+        }
+    } else {
+        history.status = 'sent';
+        history.successMessage = 'Email accepted by the mail server. Inbox delivery is not confirmed.';
+        history.providerMessageId = info.messageId;
+    }
+
+    try {
+        await history.save();
+    } catch (error) {
+        console.error(`Email result could not be recorded for history ${history._id}:`, error);
+        const message = deliveredByConfiguredTransport
+            ? 'Email was accepted by the mail server, but its result could not be recorded. Check history before retrying.'
+            : 'Email was not accepted by the mail server, but its result could not be recorded in history.';
+        const historyError = new Error(message);
+        historyError.status = 500;
+        historyError.historyId = history._id;
+        throw historyError;
+    }
+
+    if (!deliveredByConfiguredTransport) {
+        if (deliveryError) console.error(`Email delivery failed for history ${history._id}:`, deliveryError);
+        const message = isEthereal && recipientAccepted
+            ? 'Ethereal captured this test email, but did not deliver it to the recipient. See the email history for its preview.'
+            : 'Email could not be delivered. Check the email history for details.';
+        return { status: 502, message, historyId: history._id, history };
+    }
+
+    return {
+        status: 200,
+        message: 'Email accepted by the mail server. Inbox delivery is not confirmed.',
+        historyId: history._id,
+        history,
+    };
+};
+
+const validateSendPayload = ({ templateId, to, variables }) => {
+    if (typeof to !== 'string' || to.length > 254 || !EMAIL_PATTERN.test(to.trim())) {
+        return 'Enter a valid recipient email address.';
+    }
+    if (!mongoose.isValidObjectId(templateId)) return 'Choose a valid email template.';
     if (!variables || typeof variables !== 'object' || Array.isArray(variables)) {
-        return res.status(400).json({ message: 'Template variables must be an object.' });
+        return 'Template variables must be an object.';
     }
     const variableEntries = Object.entries(variables);
     if (variableEntries.length > 20 || variableEntries.some(([key, value]) => (
         !/^[a-zA-Z][a-zA-Z0-9_]{0,39}$/.test(key) || typeof value !== 'string' || value.length > 500
     ))) {
-        return res.status(400).json({ message: 'Template variables contain invalid values.' });
+        return 'Template variables contain invalid values.';
     }
+    return null;
+};
+
+const sendTemplate = async (req, res) => {
+    const { templateId, to, variables = {} } = req.body || {};
+    const validationError = validateSendPayload({ templateId, to, variables });
+    if (validationError) return res.status(400).json({ message: validationError });
 
     const settings = getMailSettings();
     if (settings.missingFields.length) {
@@ -163,88 +275,61 @@ const sendTemplate = async (req, res) => {
     }
 
     try {
-        const template = await EmailTemplate.findOne({ _id: templateId, owner: req.user.userId });
-        if (!template) return res.status(404).json({ message: 'Template not found.' });
-
-        const since = new Date(Date.now() - 60 * 60 * 1000);
-        const recentSends = await EmailHistory.countDocuments({ owner: req.user.userId, createdAt: { $gte: since } });
-        if (recentSends >= HOURLY_SEND_LIMIT) {
-            return res.status(429).json({ message: 'Email sending limit reached. Try again later.' });
-        }
-
-        const subject = renderTemplate(template.subject, variables).slice(0, MAX_SUBJECT_LENGTH);
-        const content = renderTemplate(template.content, variables);
-        const history = await EmailHistory.create({
+        const result = await sendTemplateForUser({
             owner: req.user.userId,
-            template: template._id,
-            templateName: template.name,
-            sender: settings.from,
-            recipient: to.trim().toLowerCase(),
-            subject,
-            status: 'pending',
+            templateId,
+            to,
+            variables,
         });
-
-        let info;
-        let deliveryError;
-        try {
-            info = await createTransporter(settings).sendMail({
-                from: settings.from,
-                to: history.recipient,
-                subject,
-                text: content,
-                html: escapeHtml(content).replace(/\r?\n/g, '<br>'),
-            });
-        } catch (error) {
-            deliveryError = error;
-        }
-
-        const recipientAccepted = !deliveryError
-            && Array.isArray(info?.accepted)
-            && info.accepted.some((accepted) => String(accepted).trim().toLowerCase() === history.recipient);
-        const isEthereal = settings.testService;
-        const deliveredByConfiguredTransport = recipientAccepted && !isEthereal;
-
-        if (!deliveredByConfiguredTransport) {
-            history.status = 'failed';
-            const failureReason = isEthereal && recipientAccepted
-                ? 'Ethereal is a test email service. It captured this message for preview but does not deliver it to the recipient.'
-                : typeof deliveryError?.message === 'string'
-                    ? deliveryError.message
-                    : 'The mail server did not accept the recipient.';
-            history.failureReason = failureReason.slice(0, 2000);
-            if (info?.messageId) history.providerMessageId = info.messageId;
-            if (isEthereal && recipientAccepted) {
-                history.previewUrl = nodemailer.getTestMessageUrl(info) || undefined;
-            }
-        } else {
-            history.status = 'sent';
-            history.successMessage = 'Email accepted by the mail server. Inbox delivery is not confirmed.';
-            history.providerMessageId = info.messageId;
-        }
-
-        try {
-            await history.save();
-        } catch (error) {
-            console.error(`Email result could not be recorded for history ${history._id}:`, error);
-            const message = deliveredByConfiguredTransport
-                ? 'Email was accepted by the mail server, but its result could not be recorded. Check history before retrying.'
-                : 'Email was not accepted by the mail server, but its result could not be recorded in history.';
-            return res.status(500).json({ message, historyId: history._id });
-        }
-
-        if (!deliveredByConfiguredTransport) {
-            if (deliveryError) console.error(`Email delivery failed for history ${history._id}:`, deliveryError);
-            const message = isEthereal && recipientAccepted
-                ? 'Ethereal captured this test email, but did not deliver it to the recipient. See the email history for its preview.'
-                : 'Email could not be delivered. Check the email history for details.';
-            return res.status(502).json({ message, historyId: history._id });
-        }
-
-        return res.status(200).json({ message: 'Email accepted by the mail server. Inbox delivery is not confirmed.', historyId: history._id });
+        return res.status(result.status).json({ message: result.message, historyId: result.historyId });
     } catch (error) {
         console.error('Email send request failed:', error);
-        return res.status(500).json({ message: 'Email could not be sent.' });
+        return res.status(error.status || 500).json({
+            message: error.status ? error.message : 'Email could not be sent.',
+            ...(error.missingFields ? { missingFields: error.missingFields } : {}),
+            ...(error.historyId ? { historyId: error.historyId } : {}),
+        });
     }
+};
+
+const sendScheduledTemplate = async (schedule) => {
+    const variables = schedule.variables || {};
+    const validationError = validateSendPayload({
+        templateId: schedule.template,
+        to: schedule.recipient,
+        variables,
+    });
+    if (validationError) {
+        const error = new Error(validationError);
+        error.status = 400;
+        throw error;
+    }
+    return sendTemplateForUser({
+        owner: schedule.owner,
+        templateId: schedule.template,
+        to: schedule.recipient,
+        variables,
+        origin: 'scheduled',
+        schedule,
+    });
+};
+
+const recordScheduledFailure = async (schedule, error) => {
+    const template = mongoose.isValidObjectId(schedule.template)
+        ? await EmailTemplate.findOne({ _id: schedule.template, owner: schedule.owner }).lean()
+        : null;
+    return EmailHistory.create({
+        owner: schedule.owner,
+        template: template?._id || null,
+        templateName: (template?.name || schedule.name || 'Scheduled email').slice(0, MAX_TEMPLATE_NAME_LENGTH),
+        origin: 'scheduled',
+        scheduleId: schedule._id,
+        scheduleName: schedule.name,
+        recipient: schedule.recipient,
+        subject: (template ? renderTemplate(template.subject, schedule.variables || {}).slice(0, MAX_SUBJECT_LENGTH) : 'Scheduled email'),
+        status: 'failed',
+        failureReason: (error.message || 'Scheduled email could not be sent.').slice(0, 2000),
+    });
 };
 
 const listEmailHistory = async (req, res) => {
@@ -270,5 +355,7 @@ module.exports = {
     deleteTemplate,
     testMailConfiguration,
     sendTemplate,
+    sendScheduledTemplate,
+    recordScheduledFailure,
     listEmailHistory,
 };

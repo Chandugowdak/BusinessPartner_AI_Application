@@ -10,6 +10,7 @@ const Connection = require('./model/Connection/ConnectionSchema');
 const Message = require('./model/Message/MessageSchema');
 const Notification = require('./model/Notification/NotificationSchema');
 const { isMember, otherUser } = require('./Controller/ConnectionController');
+const { startEmailScheduler } = require('./Cron/EmailScheduler');
 
 dotenv.config({ path: path.join(__dirname, '.env') });
 const app = express();
@@ -78,6 +79,7 @@ io.on('connection', (socket) => {
 data_base
     .then(() => {
         console.log('Database connected successfully');
+        startEmailScheduler();
 
         server.listen(PORT, () => {
             console.log(`Server is running on port ${PORT}`);
