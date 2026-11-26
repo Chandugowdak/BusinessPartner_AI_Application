@@ -1,0 +1,27 @@
+.roles-permissions-page { max-width: 1180px; margin: 0 auto; padding: 46px 32px 64px; }
+.roles-permissions-summary { display: flex; align-items: center; gap: 16px; margin: 0 0 24px; padding: 19px 22px; border: 1px solid #e8e5d9; border-radius: 12px; background: linear-gradient(110deg, #fffaf0, #fff); }
+.roles-summary-icon { display: grid; width: 42px; height: 42px; flex: 0 0 42px; place-items: center; border-radius: 12px; background: #fff0d6; color: #b87514; font-size: 19px; }
+.roles-permissions-summary > div:nth-child(2) { flex: 1; }
+.roles-permissions-summary strong { color: #17223b; font-size: 14px; }
+.roles-permissions-summary p { margin: 4px 0 0; color: #727b86; font-size: 12px; line-height: 1.5; }
+.roles-permissions-summary .ant-tag { margin: 0; font-size: 10px; font-weight: 700; letter-spacing: .5px; }
+.roles-permissions-toolbar { display: flex; justify-content: flex-end; margin-bottom: 16px; }
+.managed-user-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+.managed-user-card { border-color: #e7e9e5; border-radius: 12px; box-shadow: 0 5px 18px rgba(23, 34, 59, .035); }
+.managed-user-card .ant-card-body { padding: 0 20px; }
+.managed-user-heading { display: flex; align-items: center; gap: 12px; padding: 19px 0; border-bottom: 1px solid #edf0ec; }
+.managed-user-heading .ant-avatar { flex: 0 0 auto; background: #eef1ed; color: #52615d; }
+.managed-user-identity { display: grid; min-width: 0; flex: 1; gap: 4px; }
+.managed-user-identity strong { overflow: hidden; color: #17223b; font-size: 14px; text-overflow: ellipsis; white-space: nowrap; }
+.managed-user-identity span { overflow: hidden; color: #7e878c; font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+.managed-user-heading .ant-tag { margin: 0; font-size: 9px; font-weight: 700; }
+.feature-permission-row { display: flex; align-items: center; justify-content: space-between; gap: 14px; min-height: 58px; border-bottom: 1px solid #f0f1ee; }
+.feature-permission-row:last-child { border-bottom: 0; }
+.feature-permission-copy { display: grid; gap: 4px; }
+.feature-permission-copy strong { color: #34404a; font-size: 12px; font-weight: 600; }
+.feature-permission-copy span { color: #929a9e; font-size: 10px; line-height: 1.35; }
+.roles-permissions-loading { display: grid; min-height: 250px; place-items: center; }
+.roles-permissions-error { margin-bottom: 18px; padding: 12px 15px; border: 1px solid #f1c6c2; border-radius: 8px; background: #fff5f4; color: #a33b32; font-size: 13px; }
+.managed-users-empty { padding: 70px 20px; border: 1px dashed #dfe4df; border-radius: 12px; background: #fff; }
+@media (max-width: 900px) { .managed-user-grid { grid-template-columns: 1fr; } }
+@media (max-width: 600px) { .roles-permissions-page { padding: 30px 16px 42px; }.roles-permissions-summary { align-items: flex-start; gap: 11px; padding: 15px; }.roles-permissions-summary .ant-tag { align-self: flex-start; }.managed-user-card .ant-card-body { padding-inline: 15px; }.feature-permission-copy span { max-width: 235px; } }

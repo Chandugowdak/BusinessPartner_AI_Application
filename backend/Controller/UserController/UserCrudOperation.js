@@ -1,5 +1,5 @@
 const User = require('../../model/User/UserSchema.js');
-const { getPublicUser, hashGovernmentId, normalizePhone, normalizeUrl, isValidPhone, PUBLIC_USER_FIELDS } = require('./UserController');
+const { getPublicUser, hashGovernmentId, normalizePhone, normalizeUrl, isValidPhone, PUBLIC_USER_FIELDS, AUTH_USER_FIELDS } = require('./UserController');
 
 const HandleUserUpdate = async(req,res)=>{
     const { userId } = req.params;
@@ -69,11 +69,11 @@ const HandleUserUpdate = async(req,res)=>{
         updates.verificationStatus = 'pending';
     }
 
-    const UpdateUser = await User.findByIdAndUpdate(userId,updates,{new:true, runValidators:true}).select(PUBLIC_USER_FIELDS);
+    const UpdateUser = await User.findByIdAndUpdate(userId,updates,{new:true, runValidators:true}).select(AUTH_USER_FIELDS);
        if(!UpdateUser){
         return res.status(400).json({ message: 'Failed to update user' });
        }else{
-        res.status(200).json({ message: 'Profile updated. Identity verification is pending review.', user: getPublicUser(UpdateUser) });
+        res.status(200).json({ message: 'Profile updated. Identity verification is pending review.', user: getPublicUser(UpdateUser, true) });
        } 
     }
     catch(err){

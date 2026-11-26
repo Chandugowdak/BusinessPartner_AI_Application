@@ -13,6 +13,7 @@ import LoginForm from "../pages/LoginPage.jsx";
 import RegisterForm from "../pages/RegisterPage.jsx";
 import logo from "../assets/bizmatch-logo.png"; // <-- put your logo file here
 import PolicyModal from "../components/PolicyModal/PolicyModal";
+import { getDefaultFeaturePath } from "../permissions";
 import "./AuthPage.css";
 
 const { Title, Text } = Typography;
@@ -279,7 +280,10 @@ export default function AuthPage({ initialMode = "login" }) {
 
               {mode === "login" ? (
                 <LoginForm
-                  onLoginSuccess={() => navigate("/home", { replace: true })}
+                  onLoginSuccess={() => {
+                    const user = JSON.parse(localStorage.getItem("currentUser") || "{}");
+                    navigate(getDefaultFeaturePath(user), { replace: true });
+                  }}
                   onOpenPolicy={() => setPolicyOpen(true)}
                 />
               ) : (

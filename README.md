@@ -121,6 +121,27 @@ Ensure that your `package.json` contains the appropriate development script.
 
 Email automation schedules are stored in the database and run daily using the selected time zone. Configure the `MAIL_*` SMTP values shown in `backend/.env.example`; the backend and database must remain available for scheduled delivery. Each scheduled attempt is recorded with manual sends in Email History.
 
+### Create the first administrator account
+
+If no administrator account exists, the first administrator can be created
+from the frontend registration form by selecting **Administrator**. If an
+administrator already exists, public admin registration is disabled and only
+an existing administrator can create another from **Roles & permissions**.
+
+The backend setup script is also available for initial administrator
+bootstrapping. Set a unique administrator email and a strong password (at least
+12 characters) in `backend/.env`, then run:
+
+```bash
+cd backend
+npm run create:admin
+```
+
+After signing in, use **Create administrator** in **Roles & permissions** to
+add additional administrators. Public registration creates standard users;
+standard users start with no feature access. Admins can grant or revoke feature
+access per user, enforced by both the interface and protected API routes.
+
 ### 3. Set Up the Frontend
 
 Open a new terminal:

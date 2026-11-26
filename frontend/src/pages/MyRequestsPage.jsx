@@ -1,7 +1,7 @@
 import { CheckCircleOutlined, CheckOutlined, CloseCircleOutlined, CloseOutlined, ClockCircleOutlined, ReloadOutlined, SearchOutlined, SendOutlined, SortAscendingOutlined, UserAddOutlined } from "@ant-design/icons";
 import { Alert, Button, Empty, Input, Pagination, Select, Spin, Tabs, Tag } from "antd";
 import { useEffect, useMemo, useState } from "react";
-import { acceptConnection, cancelConnectionRequest, getConnections, rejectConnection } from "../DataProvider/AuthDataProvider";
+import { acceptConnection, cancelConnectionRequest, getConnectionRequests, rejectConnection } from "../DataProvider/AuthDataProvider";
 import WorkspacePage from "./WorkspacePage";
 import "./MyRequestsPage.css";
 
@@ -39,7 +39,7 @@ export default function MyRequestsPage() {
 
   const loadRecords = async () => {
     try {
-      const response = await getConnections();
+      const response = await getConnectionRequests();
       setRecords({ requests: response.requests || [], connections: response.connections || [] });
       setLoadError("");
     } catch (error) {

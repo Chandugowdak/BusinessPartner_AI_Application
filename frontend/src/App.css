@@ -12,6 +12,9 @@
 	transition: margin-left .22s ease;
 }
 
+.permission-loading { display: grid; min-height: 55vh; place-items: center; }
+.permission-load-error { max-width: 720px; margin: 100px auto; }
+
 .application-shell.has-sidebar .application-content {
 	margin-left: var(--sidebar-width, 252px);
 }

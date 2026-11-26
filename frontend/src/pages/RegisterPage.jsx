@@ -1,7 +1,7 @@
-import { useState } from "react";
-import { App as AntApp, Button, Checkbox, Form, Input } from "antd";
+import { useEffect, useState } from "react";
+import { App as AntApp, Button, Checkbox, Form, Input, Select } from "antd";
 import { ArrowRightOutlined, UserOutlined, MailOutlined, LockOutlined } from "@ant-design/icons";
-import { registerUser } from "../DataProvider/AuthDataProvider";
+import { getAdminBootstrapStatus, registerUser } from "../DataProvider/AuthDataProvider";
 import "./RegisterForm.css";
 
 /**
@@ -17,7 +17,23 @@ import "./RegisterForm.css";
 export default function RegisterForm({ onSwitchToLogin, onOpenPolicy }) {
   const [form] = Form.useForm();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [canRegisterAdmin, setCanRegisterAdmin] = useState(false);
+  const [bootstrapStatusError, setBootstrapStatusError] = useState("");
   const { notification } = AntApp.useApp();
+
+  useEffect(() => {
+    let active = true;
+    getAdminBootstrapStatus()
+      .then(({ canRegisterAdmin: canCreate }) => {
+        if (active) setCanRegisterAdmin(canCreate);
+      })
+      .catch((error) => {
+        if (active) {
+          setBootstrapStatusError(error?.response?.data?.message || "Admin signup availability could not be checked.");
+        }
+      });
+    return () => { active = false; };
+  }, []);
 
   const onFinish = async (values) => {
     try {
@@ -27,13 +43,14 @@ export default function RegisterForm({ onSwitchToLogin, onOpenPolicy }) {
         email: values.email,
         password: values.password,
         confirmPassword: values.confirm,
+        accountRole: values.accountRole,
       });
 
       notification.success({
         message: "Registration successful",
         description: response?.message || "Your account has been created.",
       });
-      form.resetFields(["name", "email", "password", "confirm", "agreement"]);
+      form.resetFields(["name", "email", "password", "confirm", "agreement", "accountRole"]);
       onSwitchToLogin?.();
     } catch (error) {
       notification.error({
@@ -51,6 +68,7 @@ export default function RegisterForm({ onSwitchToLogin, onOpenPolicy }) {
       layout="vertical"
       name="register"
       className="register-form"
+      initialValues={{ accountRole: "user" }}
       onFinish={onFinish}
       requiredMark={false}
       autoComplete="off"
@@ -83,6 +101,25 @@ export default function RegisterForm({ onSwitchToLogin, onOpenPolicy }) {
           className="register-form-input"
         />
       </Form.Item>
+
+      <Form.Item
+        label={<span className="register-form-label">Account type</span>}
+        name="accountRole"
+        rules={[{ required: true, message: "Choose an account type." }]}
+      >
+        <Select
+          size="large"
+          options={[
+            { value: "user", label: "User" },
+            {
+              value: "admin",
+              label: canRegisterAdmin ? "Administrator (first admin account)" : "Administrator (create from admin dashboard)",
+              disabled: !canRegisterAdmin,
+            },
+          ]}
+        />
+      </Form.Item>
+      {bootstrapStatusError && <p role="status">{bootstrapStatusError} Admin accounts can also be created by an existing administrator.</p>}
 
       <Form.Item
         label={<span className="register-form-label">Password</span>}

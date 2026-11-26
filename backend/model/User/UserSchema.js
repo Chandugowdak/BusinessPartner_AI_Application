@@ -2,6 +2,18 @@ const mongoose = require('mongoose');
 
 const optionalUnique = { unique: true, sparse: true };
 
+const featurePermissions = {
+    home: { type: Boolean, default: false },
+    jobs: { type: Boolean, default: false },
+    findPartners: { type: Boolean, default: false },
+    connections: { type: Boolean, default: false },
+    requests: { type: Boolean, default: false },
+    emailHistory: { type: Boolean, default: false },
+    emailConfiguration: { type: Boolean, default: false },
+    emailScheduler: { type: Boolean, default: false },
+};
+const featurePermissionsSchema = new mongoose.Schema(featurePermissions, { _id: false });
+
 const UserSchema = new mongoose.Schema({
     name:{
         type:String,
@@ -25,12 +37,24 @@ const UserSchema = new mongoose.Schema({
     xUrl: { type: String, ...optionalUnique },
     professionalField: { type: String, trim: true },
     role: { type: String, trim: true, maxlength: 80 },
+    accountRole: { type: String, enum: ['user', 'admin'], default: 'user' },
+    firstAdminBootstrap: { type: Boolean, select: false },
+    permissions: { type: featurePermissionsSchema, default: () => ({}) },
     photoUrl: { type: String, trim: true },
     governmentIdType: { type: String, enum: ['aadhaar', 'pan', 'other'] },
     governmentIdLast4: { type: String },
     governmentIdHash: { type: String, ...optionalUnique, select: false },
     verificationStatus: { type: String, enum: ['not_started', 'pending', 'verified', 'rejected'], default: 'not_started' },
 });
+
+UserSchema.index(
+    { firstAdminBootstrap: 1 },
+    {
+        unique: true,
+        partialFilterExpression: { firstAdminBootstrap: true },
+        name: 'unique_first_admin_bootstrap',
+    },
+);
 
 UserSchema.methods.getProfileCompletion = function getProfileCompletion() {
     const checks = [

@@ -1,9 +1,10 @@
 import { Alert, Button, Input, Modal, Pagination, Select, Spin, Tag } from "antd";
 import { BulbOutlined, CheckCircleOutlined, ClockCircleOutlined, EnvironmentOutlined, LinkOutlined, PlusOutlined, RocketOutlined, SearchOutlined, UsergroupAddOutlined } from "@ant-design/icons";
 import { useEffect, useState } from "react";
-import { cancelConnectionRequest, getConnections, getUsers, sendConnectionRequest } from "../DataProvider/AuthDataProvider";
+import { cancelConnectionRequest, getConnectionRequests, getUsers, sendConnectionRequest } from "../DataProvider/AuthDataProvider";
 import WorkspacePage from "./WorkspacePage";
 import "./FindPartnersPage.css";
+import { hasFeaturePermission } from "../permissions";
 
 const roles = ["Founder", "Investor", "Mentor", "Professional", "Freelancer", "Student", "Other"];
 const getInitials = (name = "") => name.split(" ").filter(Boolean).slice(0, 2).map((part) => part[0]).join("").toUpperCase() || "U";
@@ -26,6 +27,7 @@ export default function FindPartnersPage() {
   const [cooldownUntil, setCooldownUntil] = useState(null);
   const [connectNotice, setConnectNotice] = useState(null);
   const canConnect = (profile.profileCompletion || 20) >= 75;
+  const canManageRequests = hasFeaturePermission(profile, "requests");
   useEffect(() => {
     let isCurrent = true;
     setIsLoading(true);
@@ -48,13 +50,14 @@ export default function FindPartnersPage() {
     return () => { isCurrent = false; };
   }, [search, role, page, pageSize]);
   useEffect(() => {
-    getConnections().then((response) => {
+    if (!canManageRequests) return undefined;
+    getConnectionRequests().then((response) => {
       const requests = response.requests || [];
       setRequestedIds(requests.filter((request) => String(request.requestedBy) === profileId && request.status === "pending" && request.user?._id).map((request) => ({ userId: String(request.user._id), connectionId: request._id })));
       const latestCooldown = requests.find((request) => String(request.requestedBy) === profileId && request.cooldownUntil && new Date(request.cooldownUntil) > new Date());
       setCooldownUntil(latestCooldown?.cooldownUntil || null);
     }).catch(() => {});
-  }, [profileId]);
+  }, [profileId, canManageRequests]);
   const handleRequest = async () => {
     if (!selectedPartner) return;
     try {
@@ -104,7 +107,7 @@ export default function FindPartnersPage() {
               <span className="partner-location"><EnvironmentOutlined /> {partner.professionalField || "Open to new connections"}</span>
               <div className="partner-tags">{[partner.role, partner.professionalField].filter(Boolean).map((skill) => <Tag key={skill}>{skill}</Tag>)}</div>
               <div className="partner-fit"><BulbOutlined /> Complementary perspective</div>
-              {requestedIds.some((item) => String(item.userId) === String(partner._id)) ? <><div className="request-pending"><ClockCircleOutlined /> Request pending</div><Button danger block loading={String(requestingId) === String(partner._id)} onClick={() => handleCancel(partner._id)}>Withdraw request</Button></> : <Button type="primary" block icon={<PlusOutlined />} loading={String(requestingId) === String(partner._id)} onClick={() => openConnect(partner)}>Connect</Button>}
+              {!canManageRequests ? <Button block disabled>Requests access required</Button> : requestedIds.some((item) => String(item.userId) === String(partner._id)) ? <><div className="request-pending"><ClockCircleOutlined /> Request pending</div><Button danger block loading={String(requestingId) === String(partner._id)} onClick={() => handleCancel(partner._id)}>Withdraw request</Button></> : <Button type="primary" block icon={<PlusOutlined />} loading={String(requestingId) === String(partner._id)} onClick={() => openConnect(partner)}>Connect</Button>}
             </div>
           </article>
         ))}

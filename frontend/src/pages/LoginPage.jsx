@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { App as AntApp, Button, Checkbox, Form, Input } from "antd";
+import { App as AntApp, Button, Checkbox, Form, Input, Select } from "antd";
 import { ArrowRightOutlined, LockOutlined, MailOutlined } from "@ant-design/icons";
 import { loginUser } from "../DataProvider/AuthDataProvider";
 import "./LoginForm.css";
@@ -23,6 +23,7 @@ export default function LoginForm({ onLoginSuccess, onOpenPolicy }) {
       const response = await loginUser({
         email: values.email,
         password: values.password,
+        accountRole: values.accountRole,
       });
 
       if (response?.token) {
@@ -55,7 +56,7 @@ export default function LoginForm({ onLoginSuccess, onOpenPolicy }) {
       layout="vertical"
       name="login"
       className="login-form"
-      initialValues={{ remember: true }}
+      initialValues={{ remember: true, accountRole: "user" }}
       onFinish={onFinish}
       requiredMark={false}
       autoComplete="off"
@@ -86,6 +87,20 @@ export default function LoginForm({ onLoginSuccess, onOpenPolicy }) {
           prefix={<LockOutlined className="login-form-icon" />}
           placeholder="Enter your password"
           className="login-form-input"
+        />
+      </Form.Item>
+
+      <Form.Item
+        label={<span className="login-form-label">Sign in as</span>}
+        name="accountRole"
+        rules={[{ required: true, message: "Choose an account type." }]}
+      >
+        <Select
+          size="large"
+          options={[
+            { value: "user", label: "User" },
+            { value: "admin", label: "Administrator" },
+          ]}
         />
       </Form.Item>
 

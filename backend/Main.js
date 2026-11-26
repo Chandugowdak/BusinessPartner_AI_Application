@@ -9,6 +9,7 @@ const data_base = require('./config/db');
 const Connection = require('./model/Connection/ConnectionSchema');
 const Message = require('./model/Message/MessageSchema');
 const Notification = require('./model/Notification/NotificationSchema');
+const User = require('./model/User/UserSchema');
 const { isMember, otherUser } = require('./Controller/ConnectionController');
 const { startEmailScheduler } = require('./Cron/EmailScheduler');
 
@@ -47,8 +48,17 @@ app.use('/api/email', emailRoute);
 io.use((socket, next) => {
     const token = socket.handshake.auth?.token;
     if (!token) return next(new Error('Access token required'));
-    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+    jwt.verify(token, process.env.JWT_SECRET, async (err, user) => {
         if (err) return next(new Error('Invalid token'));
+        try {
+            const account = await User.findById(user.userId).select('accountRole permissions');
+            if (!account) return next(new Error('User account not found'));
+            if (account.accountRole !== 'admin' && account.permissions?.connections !== true) {
+                return next(new Error('You do not have permission to access connections'));
+            }
+        } catch (error) {
+            return next(error);
+        }
         socket.user = user;
         next();
     });

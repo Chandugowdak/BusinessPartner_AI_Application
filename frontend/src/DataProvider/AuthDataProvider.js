@@ -5,6 +5,31 @@ export const loginUser = async (payload) => {
   return response.data;
 };
 
+export const getAdminBootstrapStatus = async () => {
+  const response = await apiClient.get('/user/admin-bootstrap-status');
+  return response.data;
+};
+
+export const getCurrentUser = async () => {
+  const response = await apiClient.get('/user/me');
+  return response.data.user;
+};
+
+export const getManagedUsers = async () => {
+  const response = await apiClient.get('/user/admin/users');
+  return response.data.users;
+};
+
+export const createManagedAdmin = async (payload) => {
+  const response = await apiClient.post('/user/admin/users', payload);
+  return response.data;
+};
+
+export const updateUserPermissions = async (userId, permissions) => {
+  const response = await apiClient.put(`/user/admin/users/${userId}/permissions`, { permissions });
+  return response.data;
+};
+
 export const updateUser = async (userId, payload) => {
   const response = await apiClient.put(`/user/update/${userId}`, payload);
   return response.data;
@@ -17,6 +42,11 @@ export const getUsers = async (params) => {
 
 export const getConnections = async () => {
   const response = await apiClient.get('/connections');
+  return response.data;
+};
+
+export const getConnectionRequests = async () => {
+  const response = await apiClient.get('/connections/requests');
   return response.data;
 };
 

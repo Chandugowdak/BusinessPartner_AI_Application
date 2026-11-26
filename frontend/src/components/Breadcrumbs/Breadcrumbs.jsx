@@ -11,6 +11,8 @@ const ROUTE_LABELS = {
   messages: "Messages",
   notifications: "Notifications",
   profile: "Profile",
+  admin: "Administration",
+  "roles-permissions": "Roles & permissions",
 };
 
 export default function Breadcrumbs() {

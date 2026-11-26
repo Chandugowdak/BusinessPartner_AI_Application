@@ -52,14 +52,13 @@ const SendConnectionRequest = async (req, res) => {
     }
 };
 
-const ListConnections = async (req, res) => {
-    try {
+const getConnectionRecords = async (userId) => {
         const expiryCutoff = new Date(Date.now() - REQUEST_EXPIRY_DAYS * 24 * 60 * 60 * 1000);
         await Connection.updateMany(
             { $or: [{ expiresAt: { $lte: new Date() } }, { expiresAt: { $exists: false }, createdAt: { $lte: expiryCutoff } }], status: 'pending' },
             { $set: { status: 'rejected' }, $unset: { expiresAt: 1 } },
         );
-        const connections = await Connection.find({ $or: [{ requester: req.user.userId }, { recipient: req.user.userId }] })
+        const connections = await Connection.find({ $or: [{ requester: userId }, { recipient: userId }] })
             .populate('requester', 'name email phone linkedInUrl xUrl professionalField role photoUrl governmentIdType governmentIdLast4 verificationStatus')
             .populate('recipient', 'name email phone linkedInUrl xUrl professionalField role photoUrl governmentIdType governmentIdLast4 verificationStatus')
             .sort({ updatedAt: -1 });
@@ -70,12 +69,27 @@ const ListConnections = async (req, res) => {
             { $group: { _id: '$connection', message: { $first: '$$ROOT' } } },
         ]);
         const latestByConnection = new Map(lastMessages.map((item) => [String(item._id), item.message]));
-        res.json({
-            connections: accepted.map((item) => connectionView(item, req.user.userId, latestByConnection.get(String(item._id)))),
-            requests: connections.filter((item) => item.status === 'pending' || item.status === 'rejected').map((item) => connectionView(item, req.user.userId)),
-        });
+        return {
+            connections: accepted.map((item) => connectionView(item, userId, latestByConnection.get(String(item._id)))),
+            requests: connections.filter((item) => item.status === 'pending' || item.status === 'rejected').map((item) => connectionView(item, userId)),
+        };
+};
+
+const ListConnections = async (req, res) => {
+    try {
+        const records = await getConnectionRecords(req.user.userId);
+        res.json({ connections: records.connections });
     } catch (err) {
         res.status(500).json({ message: 'Could not load connections', error: err.message });
+    }
+};
+
+const ListConnectionRequests = async (req, res) => {
+    try {
+        const records = await getConnectionRecords(req.user.userId);
+        res.json(records);
+    } catch (err) {
+        res.status(500).json({ message: 'Could not load requests', error: err.message });
     }
 };
 
@@ -155,4 +169,4 @@ const CreateMessage = async (req, res) => {
     }
 };
 
-module.exports = { SendConnectionRequest, ListConnections, AcceptConnectionRequest, RejectConnectionRequest, CancelConnectionRequest, GetConversation, CreateMessage, getPairKey, isMember, otherUser };
+module.exports = { SendConnectionRequest, ListConnections, ListConnectionRequests, AcceptConnectionRequest, RejectConnectionRequest, CancelConnectionRequest, GetConversation, CreateMessage, getPairKey, isMember, otherUser };

@@ -1,5 +1,6 @@
 const express = require('express');
 const authenticateToken = require('../MiddleWare/Auth');
+const { requireFeature } = require('../MiddleWare/Permissions');
 const {
     listConfiguration,
     createTemplate,
@@ -19,16 +20,16 @@ const {
 const emailRoute = express.Router();
 emailRoute.use(authenticateToken);
 
-emailRoute.get('/configuration', listConfiguration);
-emailRoute.post('/configuration/test', testMailConfiguration);
-emailRoute.post('/templates', createTemplate);
-emailRoute.put('/templates/:templateId', updateTemplate);
-emailRoute.delete('/templates/:templateId', deleteTemplate);
-emailRoute.post('/send', sendTemplate);
-emailRoute.get('/history', listEmailHistory);
-emailRoute.get('/schedules', listSchedules);
-emailRoute.post('/schedules', createSchedule);
-emailRoute.put('/schedules/:scheduleId', updateSchedule);
-emailRoute.delete('/schedules/:scheduleId', deleteSchedule);
+emailRoute.get('/configuration', requireFeature('emailConfiguration'), listConfiguration);
+emailRoute.post('/configuration/test', requireFeature('emailConfiguration'), testMailConfiguration);
+emailRoute.post('/templates', requireFeature('emailConfiguration'), createTemplate);
+emailRoute.put('/templates/:templateId', requireFeature('emailConfiguration'), updateTemplate);
+emailRoute.delete('/templates/:templateId', requireFeature('emailConfiguration'), deleteTemplate);
+emailRoute.post('/send', requireFeature('emailConfiguration'), sendTemplate);
+emailRoute.get('/history', requireFeature('emailHistory'), listEmailHistory);
+emailRoute.get('/schedules', requireFeature('emailScheduler'), listSchedules);
+emailRoute.post('/schedules', requireFeature('emailScheduler'), createSchedule);
+emailRoute.put('/schedules/:scheduleId', requireFeature('emailScheduler'), updateSchedule);
+emailRoute.delete('/schedules/:scheduleId', requireFeature('emailScheduler'), deleteSchedule);
 
 module.exports = emailRoute;
